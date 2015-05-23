@@ -5,21 +5,36 @@ import sys
 import time
 from thread import*
 
+# time.asctime(time.localtime(time.time()))
+
 class User:
-	def __init__ (self, user, pw
+	def __init__ (self, user, pw):
+		self.user = user
+		self.pw = pw
+		self.subs = []
+		self.msg_read = []
+		self.msg_unread = []
 
 def validateUser(username, pw):
+	for user in User:
+		if user.username == username and user.pw == pw:
+			return true
 
+	return false
+	
+# initializes list of users
+def serverSetup():
+	userList.append( User ("abc", "abc") )
+	userList.append( User ("pizza", "cheese")
+	userList.append( User ("apple", "sauce")
 
-# this is the server side
 def make_pkt (seqNum, checksum):
 	packet = str(seqNum) + checksum
 	return packet
 
-# this is main
+# ======================== M A I N ===============================
 HOST = ''
 PORT = 2124
-winSize = 4
 
 sock = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
 print 'Socket created'
@@ -36,12 +51,14 @@ print 'Socket bind success'
 expectedseqnum = 0
 oldPacket = ""
 newPacket = ""
+userList []
+
+serverSetup()
 	
 while 1:
 	data = []
 	clientAddr = []
 
-	# rdt_rcv(rcvpkt) transition
 	data, clientAddr = sock.recvfrom (1024)
 		
 	if not data: 
