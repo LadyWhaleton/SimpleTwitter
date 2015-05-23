@@ -6,8 +6,8 @@ from thread import*
 # time.asctime(time.localtime(time.time()))
 
 class User:
-	def __init__ (self, user, pw):
-		self.user = user
+	def __init__ (self, username, pw):
+		self.username = username
 		self.pw = pw
 		self.online = False
 		self.subs = []
@@ -22,7 +22,7 @@ def validateUser(conn, addr):
 		username = conn.recv(1024)
 		pw = conn.recv (1024)
 	
-		for user in User:
+		for user in userList:
 			if user.username == username and user.pw == pw:
 				print 'Client ' + addr[0] + ':' + addr[1] + ', ' + username + ' is authorized.'
 				validUser = True
