@@ -8,11 +8,38 @@ import getpass
 def displayMenu(username, numUnread):
 
 	print "~~~~~~~~~~~~~~~~~~~~~~~~~WhaleSpeak~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	print "                               ','. '. ; : ,','"
+	print "                                 '..'.,',..'"
+	print "                                    ';.'  ,'    Hello!"
+	print "                                     ;;         /"
+	print "                                     ;'	       /"
+	print "                       :._   _.------------.___"
+	print "               __      :__:-'                  '--."
+	print "        __   ,'_.'    .'             ______________'."
+	print "      /__'.-  /__.__..'          ^  .' .'  .'  _.-_.'"
+	print "         '._                     .-': .' _.' _.'_.'"
+	print "            '----'._____________.'_'._:_:_.-'--'"
 	print username + ", you have " + str(numUnread) + " unread messages."
 	print "1. See Offline Messages"
 	print "2. Edit Subscriptions"
 	print "3. Post a Message"
 	print "4. Logout"
+	
+def logout(mySocket):
+	print "~~~~~~~~~~~~~~~~~~~~~~~~~WhaleSpeak~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+	print "                               ','. '. ; : ,','"
+	print "                                 '..'.,',..'"
+	print "                                    ';.'  ,'    Goodbye!"
+	print "                                     ;;         /"
+	print "                                     ;'	       /"
+	print "                       :._   _.------------.___"
+	print "               __      :__:-'                  '--."
+	print "        __   ,'_.'    .'             ______________'."
+	print "      /__'.-  /__.__..'          =  .' .'  .'  _.-_.'"
+	print "         '._                     .-': .' _.' _.'_.'"
+	print "            '----'._____________.'_'._:_:_.-'--'"
+	
+	mySocket.close()
 
 def login(mySocket):
 	data = mySocket.recv(1024)
@@ -35,18 +62,6 @@ def login(mySocket):
 			print "Error: Invalid username / password!\n"
 			
 	print "Login successful!"
-	print "~~~~~~~~~~~~~~~~~~~Welcome to WhaleSpeak!~~~~~~~~~~~~~~~~~~~~~~~~~"
-	print "                               ','. '. ; : ,','"
-	print "                                 '..'.,',..'"
-	print "                                    ';.'  ,'    Hello!"
-	print "                                     ;;         /"
-	print "                                     ;'	       /"
-	print "                       :._   _.------------.___"
-	print "               __      :__:-'                  '--."
-	print "        __   ,'_.'    .'             ______________'."
-	print "      /__'.-  /__.__..'          0  .' .'  .'  _.-_.'"
-	print "         '._                     .-': .' _.' _.'_.'"
-	print "            '----'._____________.'_'._:_:_.-'--'"
 	
 	return (name, int(num))
 
@@ -70,13 +85,24 @@ if ret > 0:
 	print 'Error: Unable to connect to server!'
 	exit(0)
 	
-
+logOut = False
 
 username, numUnread = login(sock)
-displayMenu(username, numUnread)
 
-# while (1):
+while (not(logOut)):
+	displayMenu(username, numUnread)
+	optionNum = raw_input ("Which option to perform?: ")
+	os.system ('clear')
+	
+	if optionNum == '1':
+			print 'Offline messages'
+	elif optionNum == '2': 
+			print 'Edit Subscriptions'
+	elif optionNum == '3': 
+			print 'Post a message'
+	elif optionNum == '4': 
+			logout(sock)
+			logOut = True
+	else:
+			print 'Invalid option. Please try again.'
 
-
-# now we close the socket
-sock.close()
