@@ -89,6 +89,7 @@ logOut = False
 
 username, numUnread = login(sock)
 
+# http://stackoverflow.com/questions/16790725/sending-file-from-server-to-client-python
 while (not(logOut)):
 	displayMenu(username, numUnread)
 	optionNum = raw_input ("Which option to perform?: ")
