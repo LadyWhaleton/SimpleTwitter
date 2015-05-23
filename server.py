@@ -1,6 +1,4 @@
-from check import ip_checksum
 import socket
-import select
 import sys
 import time
 from thread import*
@@ -25,18 +23,33 @@ def validateUser(username, pw):
 # initializes list of users
 def serverSetup():
 	userList.append( User ("abc", "abc") )
-	userList.append( User ("pizza", "cheese")
-	userList.append( User ("apple", "sauce")
+	userList.append( User ("pizza", "cheese") )
+	userList.append( User ("apple", "sauce") )
 
-def make_pkt (seqNum, checksum):
-	packet = str(seqNum) + checksum
-	return packet
+def handleClient(conn):
+	# Sending message to client
+	conn.send ('Welcome to SimpleTwitter. Please log in.\nUsername: ')
+
+	while 1:
+		data = conn.recv(1024)
+		if not data:
+			break
+
+		if ( data[0:12] == "Send to all:"):
+			for client in clientList:
+				reply = "OK..." + data[12:]
+				client.send(replt)
+		else:
+			reply = "OK..." + data
+			conn.sendall (reply)
+
+	conn.close()
 
 # ======================== M A I N ===============================
 HOST = ''
 PORT = 2124
 
-sock = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
+sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
 print 'Socket created'
 
 # try to bind the socket
@@ -48,33 +61,29 @@ except socket.error , msg:
 
 print 'Socket bind success'
 
-expectedseqnum = 0
+messageNum = 0
 oldPacket = ""
 newPacket = ""
-userList []
+userList = []
+onlineUsers = []
+clientList = []
 
 serverSetup()
+
+# now we listen for any incoming connections
+sock.listen(10)
+
+print 'Socket now listening'
 	
 while 1:
-	data = []
-	clientAddr = []
+	# wait to accept a connection
+	conn, clientAddr = sock.accept()
+	clientList.append(conn)	
+	
+	# display client info
+	print 'Connected with ' + clientAddr[0] + ':' + str(addr[1])
 
-	data, clientAddr = sock.recvfrom (1024)
-		
-	if not data: 
-		break
-
-	print '\nMessage[' + clientAddr[0] + ':' + str(clientAddr[1]) + '] ' + data.strip()	
-	checksum = data[1:3]
-	newPacket = make_pkt (expectedseqnum, checksum)
-
-	if oldPacket != newPacket:
-		# send back the message so the client knows server got message
-		oldPacket = newPacket
-		sock.sendto (oldpacket, clientAddr)
-		expectedseqnum += 1
-	else:
-		print "Error: Duplicate packet detected!"
-		
+	# start a new thread
+	start_new_thread(handleClient, (conn,) )		
 
 sock.close()
