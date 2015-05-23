@@ -81,7 +81,7 @@ while 1:
 	clientList.append(conn)	
 	
 	# display client info
-	print 'Connected with ' + clientAddr[0] + ':' + str(addr[1])
+	print 'Connected with ' + clientAddr[0] + ':' + str(clientAddr[1])
 
 	# start a new thread
 	start_new_thread(handleClient, (conn,) )		

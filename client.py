@@ -2,7 +2,9 @@ import socket
 import sys
 import time
 
-
+def login(mySocket):
+	data = mySocket.recv(1024)
+	print data
 
 
 # ========================== M A I N ===========================
@@ -10,7 +12,7 @@ host = ''
 port = 2124
 
 try:
-	sock = socket.socket (socket.AF_INET, socket.SOCK_DGRAM)
+	sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
 
 except socket.error, msg:
 	print 'Failed to create socket. Error code: ' + str(msg[0]) + ' , Error message: ' + msg[1] 
@@ -23,9 +25,10 @@ if ret > 0:
 	print 'Error: Unable to connect to server!'
 	exit(0)
 
-while (1):
-	msg = "hi"	
-				
+login(sock)
+
+# while (1):
+
 
 # now we close the socket
 sock.close()
