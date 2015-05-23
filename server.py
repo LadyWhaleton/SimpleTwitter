@@ -24,14 +24,14 @@ def validateUser(conn, addr):
 	
 		for user in userList:
 			if user.username == username and user.pw == pw:
-				print 'Client ' + addr[0] + ':' + addr[1] + ', ' + username + ' is authorized.'
+				print 'Client ' + addr[0] + ':' + str(addr[1]) + ', ' + username + ' is authorized.'
 				validUser = True
-				conn.send (validUser)
+				conn.send ('1')
 				return username
 
 		if not(validUser):
-			print 'Client' + addr[0] + ':' + addr[1] + ', ' + username + 'unauthorized user.'
-			conn.send (False) 
+			print 'Client' + addr[0] + ':' + str(addr[1]) + ', ' + username + 'unauthorized user.'
+			conn.send ('0') 
 			
 
 			
@@ -47,19 +47,6 @@ def handleClient(conn, addr):
 	conn.send ('Welcome to SimpleTwitter. Please log in.')
 
 	currUser = validateUser(conn, addr)
-
-	while 1:
-
-		if not data:
-			break
-
-		if ( data[0:12] == "Send to all:"):
-			for client in clientList:
-				reply = "OK..." + data[12:]
-				client.send(reply)
-		else:
-			reply = "OK..." + data
-			conn.sendall (reply)
 
 	conn.close()
 
