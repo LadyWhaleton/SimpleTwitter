@@ -1,4 +1,6 @@
 import socket
+import struct
+import os
 import sys
 import time
 from thread import*
@@ -13,6 +15,7 @@ class User:
 		self.subs = []
 		self.msg_read = []
 		self.msg_unread = []
+		self.numUnread = 0
 
 def validateUser(conn, addr):
 	
@@ -21,19 +24,18 @@ def validateUser(conn, addr):
 	while not(validUser):
 		username = conn.recv(1024)
 		pw = conn.recv (1024)
-	
+		
 		for user in userList:
 			if user.username == username and user.pw == pw:
 				print 'Client ' + addr[0] + ':' + str(addr[1]) + ', ' + username + ' is authorized.'
 				validUser = True
-				conn.send ('1')
-				return username
+				msg = '1 ' + str(user.numUnread)
+				conn.send (msg) 
+				return user
 
 		if not(validUser):
 			print 'Client' + addr[0] + ':' + str(addr[1]) + ', ' + username + 'unauthorized user.'
 			conn.send ('0') 
-			
-
 			
 	
 # initializes list of users
@@ -44,7 +46,7 @@ def serverSetup():
 
 def handleClient(conn, addr):
 	# Sending message to client
-	conn.send ('Welcome to SimpleTwitter. Please log in.')
+	conn.send ('Please log in.')
 
 	currUser = validateUser(conn, addr)
 
@@ -53,6 +55,8 @@ def handleClient(conn, addr):
 # ======================== M A I N ===============================
 HOST = ''
 PORT = 2124
+
+os.system ('clear')
 
 sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
 print 'Socket created'
