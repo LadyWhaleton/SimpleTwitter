@@ -6,6 +6,21 @@ def login(mySocket):
 	data = mySocket.recv(1024)
 	print data
 
+	loginSuccess = 0
+
+	while loginSuccess == 0:
+		username = raw_input ("Username: ")
+		pw = raw_input ("Password: ")
+
+		mySocket.send(username)
+		mySocket.send(pw)
+
+		loginSuccess = mySocket.recv(1024)
+		
+		if not(loginSuccess):
+			print "Error: Invalid username / password!\n"
+	
+
 
 # ========================== M A I N ===========================
 host = ''

@@ -9,16 +9,32 @@ class User:
 	def __init__ (self, user, pw):
 		self.user = user
 		self.pw = pw
+		self.online = False
 		self.subs = []
 		self.msg_read = []
 		self.msg_unread = []
 
-def validateUser(username, pw):
-	for user in User:
-		if user.username == username and user.pw == pw:
-			return true
+def validateUser(conn, addr):
+	
+	validUser = False
+	
+	while not(validUser):
+		username = conn.recv(1024)
+		pw = conn.recv (1024)
+	
+		for user in User:
+			if user.username == username and user.pw == pw:
+				print 'Client ' + addr[0] + ':' + addr[1] + ', ' + username + ' is authorized.'
+				validUser = True
+				conn.send (validUser)
+				return username
 
-	return false
+		if not(validUser):
+			print 'Client' + addr[0] + ':' + addr[1] + ', ' + username + 'unauthorized user.'
+			conn.send (False) 
+			
+
+			
 	
 # initializes list of users
 def serverSetup():
@@ -26,19 +42,21 @@ def serverSetup():
 	userList.append( User ("pizza", "cheese") )
 	userList.append( User ("apple", "sauce") )
 
-def handleClient(conn):
+def handleClient(conn, addr):
 	# Sending message to client
-	conn.send ('Welcome to SimpleTwitter. Please log in.\nUsername: ')
+	conn.send ('Welcome to SimpleTwitter. Please log in.')
+
+	currUser = validateUser(conn, addr)
 
 	while 1:
-		data = conn.recv(1024)
+
 		if not data:
 			break
 
 		if ( data[0:12] == "Send to all:"):
 			for client in clientList:
 				reply = "OK..." + data[12:]
-				client.send(replt)
+				client.send(reply)
 		else:
 			reply = "OK..." + data
 			conn.sendall (reply)
@@ -84,6 +102,6 @@ while 1:
 	print 'Connected with ' + clientAddr[0] + ':' + str(clientAddr[1])
 
 	# start a new thread
-	start_new_thread(handleClient, (conn,) )		
+	start_new_thread(handleClient, (conn, clientAddr) )		
 
 sock.close()
