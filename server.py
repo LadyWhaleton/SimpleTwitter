@@ -7,6 +7,7 @@ from thread import*
 from common import *
 
 # time.asctime(time.localtime(time.time()))
+# http://python.readthedocs.org/en/latest/howto/curses.html
 
 class User:
 	def __init__ (self, username, pw):
@@ -16,7 +17,29 @@ class User:
 		self.subs = []
 		self.msg_read = []
 		self.msg_unread = []
-		self.numUnread = 0
+
+def subscribe(user, name, conn):
+	for subUser in userList:
+		# if the subcription username exists
+		if subUser.username == name:
+			# check the user already subscribed to this person
+			for subName in subUser.subs:
+				# if the name already exists in the list of subs, return
+				if subName == name:
+					return
+			# only arrive here if name doesn't exist, OK to subscribe
+			user.subs.append(name)
+			return
+			
+			
+
+# determines whether or not the user exists	and does stuff
+# used for Deleting a subscription	
+def unsubscribe(user, name, conn):
+	for u in userList:
+		if u.username == name:
+			x = 0
+	return " "
 
 def validateUser(conn, addr):
 	
@@ -31,7 +54,7 @@ def validateUser(conn, addr):
 				print 'Client ' + addr[0] + ':' + str(addr[1]) + ', ' + username + ' is authorized.'
 				validUser = True
 				user.isOnline = True
-				msg = '1 ' + str(user.numUnread)
+				msg = '1 ' + str(len(user.msg_unread))
 				conn.send (msg) 
 				return user
 
@@ -46,8 +69,52 @@ def serverSetup():
 	userList.append( User ("pizza", "cheese") )
 	userList.append( User ("apple", "sauce") )
 
+# serverside ViewOffline
+def serverView(user, conn):
+	print 'View Offline Messages'
+
+# serverside SearchByHashTag	
+def serverSearch(user, conn):
+	print "Searching by Hashtags"
+
+# serverside EditSubs
+def serverEdit(user, conn):
+	# send the number of people the user is subscribed to
+	numFollowing = len(user.subs)
+	print str(numFollowing)
+	conn.send(str(numFollowing))
+	
+	# Loop 
+	while True:
+		# wait for client input
+		option = recv(1024)
+		
+		if option == '1':
+			username = recv(1024)
+			
+			
+			if tempFlag == True:
+				conn.send('1')
+				 
+			
+			# conn.send('1' if userExists(username) else '0')
+			
+		elif option == '2'
+			# send subscriptions
+			for i in range(0, numFollowing):
+				currUser = user.subs[i]
+				conn.send(str(i+1) + " " + currUser.username)
+				
+			# wait for user to select 
+		
+		elif option == '~':
+			return
+
+def serverPost(user, conn):
+	print 'User wants to post a message.'
+
 # serverside logout
-def logout(user, conn, addr):
+def serverLogout(user, conn, addr):
 	user.isOnline = False
 	print user.username + " is logging out."
 	conn.close()
@@ -67,15 +134,19 @@ def handleClient(conn, addr):
 		optionNum = conn.recv(1024)
 		
 		if optionNum == VIEW:
-			print 'View Offline Messages'
+			serverView(currUser, conn)
+			
 		elif optionNum == SEARCH: 
-			print 'Search by Hashtag'
+			serverSearch(currUser, conn)
+			
 		elif optionNum == EDIT: 
-			print 'Edit Subscriptions'
+			serverEdit(currUser, conn)
+			
 		elif optionNum == POST:
-			print 'Post a Message'
+			serverPost(currUser, conn)
+			
 		elif optionNum == LOGOUT: 
-			logout(currUser, conn, addr)
+			serverLogout(currUser, conn, addr)
 			UserLogout = True
 
 

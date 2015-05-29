@@ -30,8 +30,61 @@ def displayMenu(username, numUnread):
 	print "4. Post a Message"
 	print "5. Logout"
 
+	
+def clientView(mySocket):
+	mySocket.send(VIEW)
+	print "Viewing offline messages"
+
+def clientSearch(mySocket):
+	mySocket.send(SEARCH)
+	print 'Searching by hashtags'
+	
+def clientEdit(mySocket):
+	mySocket.send(EDIT)
+	numFollowing = int(mySocket.recv(1024))
+	
+	while True:
+		
+		os.system ('clear')
+		print 'You are subscribed to ' + str(numFollowing) + ' whales.'
+		
+		print '1. Subscribe to a Whale'
+		
+		if numFollowing > 0:
+			print '2. Unsubscribe a Whale'
+			
+		print '~. Return to Menu'
+		
+		option = raw_input('What would you like to do?: ')
+		
+		if option == '1':
+			name = raw_input('Who do you want to subscribe to?: ')
+			mySocket.send(name)
+			
+			# wait for server to validate user
+			tempflag = mySocket.recv(1024)
+			
+			if tempFlag == '1':
+				
+			
+		elif option == '2' and numFollowing > 0:
+			# Display subscriptions
+			for i in range(0, numFollowing):
+				
+		
+		elif option == '~':
+			return
+			
+		else:
+			print 'Error: Invalid option! Please try again.'
+	
+	
+	
+def clientPost(mySocket):
+	print 'Create a message'
+
 # clientside logout	
-def logout(mySocket):
+def clientLogout(mySocket):
 	print "~~~~~~~~~~~~~~~~~~~~~~~~~WhaleSpeak~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	print "                               ','. '. ; : ,','"
 	print "                                 '..'.,',..'"
@@ -48,9 +101,6 @@ def logout(mySocket):
 	mySocket.send(LOGOUT)
 	mySocket.close()
 	
-def ViewOfflineMessages(mySocket):
-	print "Viewing offline messages"
-
 def login(mySocket):
 	data = mySocket.recv(1024)
 	print data
@@ -106,16 +156,21 @@ while (not(logOut)):
 	os.system ('clear')
 	
 	if optionNum == VIEW:
-			print 'View Offline Messages'
+			clientView(sock)
+			
 	elif optionNum == SEARCH: 
-			print 'Search by Hashtag'
+			clientSearch(sock)
+			
 	elif optionNum == EDIT: 
-			print 'Edit Subscriptions'
+			clientEdit(sock)
+			
 	elif optionNum == POST:
-			print 'Post a Message'
+			clientPost(sock)
+			
 	elif optionNum == LOGOUT: 
-			logout(sock)
+			clientLogout(sock)
 			logOut = True
+			
 	else:
 			print 'Invalid option. Please try again.'
 
