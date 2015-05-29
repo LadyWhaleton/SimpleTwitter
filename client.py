@@ -5,6 +5,9 @@ import sys
 import time
 import curses
 import getpass
+from common import *
+
+# https://www.youtube.com/watch?v=RXEOIAxgldw
 
 def displayMenu(username, numUnread):
 
@@ -26,7 +29,8 @@ def displayMenu(username, numUnread):
 	print "3. Edit Subscriptions"
 	print "4. Post a Message"
 	print "5. Logout"
-	
+
+# clientside logout	
 def logout(mySocket):
 	print "~~~~~~~~~~~~~~~~~~~~~~~~~WhaleSpeak~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
 	print "                               ','. '. ; : ,','"
@@ -41,7 +45,11 @@ def logout(mySocket):
 	print "         '._                     .-': .' _.' _.'_.'"
 	print "            '----'._____________.'_'._:_:_.-'--'"
 	
+	mySocket.send(LOGOUT)
 	mySocket.close()
+	
+def ViewOfflineMessages(mySocket):
+	print "Viewing offline messages"
 
 def login(mySocket):
 	data = mySocket.recv(1024)
@@ -97,15 +105,15 @@ while (not(logOut)):
 	optionNum = raw_input ("Which option to perform?: ")
 	os.system ('clear')
 	
-	if optionNum == '1':
+	if optionNum == VIEW:
 			print 'View Offline Messages'
-	elif optionNum == '2': 
+	elif optionNum == SEARCH: 
 			print 'Search by Hashtag'
-	elif optionNum == '3': 
+	elif optionNum == EDIT: 
 			print 'Edit Subscriptions'
-	elif optionNum == '4':
+	elif optionNum == POST:
 			print 'Post a Message'
-	elif optionNum == '5': 
+	elif optionNum == LOGOUT: 
 			logout(sock)
 			logOut = True
 	else:

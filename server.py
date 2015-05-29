@@ -4,6 +4,7 @@ import os
 import sys
 import time
 from thread import*
+from common import *
 
 # time.asctime(time.localtime(time.time()))
 
@@ -11,7 +12,7 @@ class User:
 	def __init__ (self, username, pw):
 		self.username = username
 		self.pw = pw
-		self.online = False
+		self.isOnline = False
 		self.subs = []
 		self.msg_read = []
 		self.msg_unread = []
@@ -29,6 +30,7 @@ def validateUser(conn, addr):
 			if user.username == username and user.pw == pw:
 				print 'Client ' + addr[0] + ':' + str(addr[1]) + ', ' + username + ' is authorized.'
 				validUser = True
+				user.isOnline = True
 				msg = '1 ' + str(user.numUnread)
 				conn.send (msg) 
 				return user
@@ -44,13 +46,38 @@ def serverSetup():
 	userList.append( User ("pizza", "cheese") )
 	userList.append( User ("apple", "sauce") )
 
+# serverside logout
+def logout(user, conn, addr):
+	user.isOnline = False
+	print user.username + " is logging out."
+	conn.close()
+	
 def handleClient(conn, addr):
 	# Sending message to client
 	conn.send ('Please log in.')
-
+	
+	# Validate the user
 	currUser = validateUser(conn, addr)
+	
+	UserLogout = False
+	
+	# Infinite loop
+	while (not(UserLogout)):
+		# Waiting for user command
+		optionNum = conn.recv(1024)
+		
+		if optionNum == VIEW:
+			print 'View Offline Messages'
+		elif optionNum == SEARCH: 
+			print 'Search by Hashtag'
+		elif optionNum == EDIT: 
+			print 'Edit Subscriptions'
+		elif optionNum == POST:
+			print 'Post a Message'
+		elif optionNum == LOGOUT: 
+			logout(currUser, conn, addr)
+			UserLogout = True
 
-	conn.close()
 
 # ======================== M A I N ===============================
 HOST = ''
@@ -83,6 +110,8 @@ serverSetup()
 sock.listen(10)
 
 print 'Socket now listening'
+
+# Maybe make a admin thread????
 	
 while 1:
 	# wait to accept a connection
