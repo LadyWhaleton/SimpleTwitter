@@ -3,6 +3,7 @@ import struct
 import os
 import sys
 import time
+import curses
 import getpass
 
 def displayMenu(username, numUnread):
@@ -21,9 +22,10 @@ def displayMenu(username, numUnread):
 	print "            '----'._____________.'_'._:_:_.-'--'"
 	print username + ", you have " + str(numUnread) + " unread messages."
 	print "1. See Offline Messages"
-	print "2. Edit Subscriptions"
-	print "3. Post a Message"
-	print "4. Logout"
+	print "2. Search by Hashtag"
+	print "3. Edit Subscriptions"
+	print "4. Post a Message"
+	print "5. Logout"
 	
 def logout(mySocket):
 	print "~~~~~~~~~~~~~~~~~~~~~~~~~WhaleSpeak~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -96,12 +98,14 @@ while (not(logOut)):
 	os.system ('clear')
 	
 	if optionNum == '1':
-			print 'Offline messages'
+			print 'View Offline Messages'
 	elif optionNum == '2': 
-			print 'Edit Subscriptions'
+			print 'Search by Hashtag'
 	elif optionNum == '3': 
-			print 'Post a message'
-	elif optionNum == '4': 
+			print 'Edit Subscriptions'
+	elif optionNum == '4':
+			print 'Post a Message'
+	elif optionNum == '5': 
 			logout(sock)
 			logOut = True
 	else:
