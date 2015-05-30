@@ -55,20 +55,26 @@ def serverSearch(user, conn):
 	print "Searching by Hashtags"
 
 def subscribe(user, conn):
-	otherName = recv(1024)
+	otherName = conn.recv(1024)
 	
 	for subUser in userList:
 		# if the subcription username exists
 		if subUser.username == otherName:
 			# check the user already subscribed to this person
+			print 'Found user in userlist!'
+			
 			for subName in subUser.subscriptions:
 				# if the name already exists in the list of subs, return
 				if subName == otherName:
 					print 'Error: ' + user.username + ' already subscribed to' + otherName 
 					return
-			# only arrive here if name doesn't exist, OK to subscribe
+					
+			# only arrive here if otherName isn't in sublist, OK to subscribe
 			user.subscriptions.append(otherName)
+			print 'Successfully subscribed to ' + otherName
 			return
+	
+	print 'Error: ' + otherName + ' does not exist!'
 			
 # determines whether or not the user exists	and does stuff
 # used for Deleting a subscription	
@@ -94,7 +100,6 @@ def unsubscribe(user, conn):
 def serverEdit(user, conn):
 	# send the number of people the user is subscribed to
 	numFollowing = len(user.subscriptions)
-	print str(numFollowing)
 	conn.send(str(numFollowing))
 	
 	# Loop 
@@ -172,11 +177,8 @@ except socket.error , msg:
 print 'Socket bind success'
 
 messageNum = 0
-oldPacket = ""
-newPacket = ""
 userList = []
 onlineUsers = []
-clientList = []
 
 serverSetup()
 
@@ -190,7 +192,7 @@ print 'Socket now listening'
 while 1:
 	# wait to accept a connection
 	conn, clientAddr = sock.accept()
-	clientList.append(conn)	
+	onlineUsers.append(conn)	
 	
 	# display client info
 	print 'Connected with ' + clientAddr[0] + ':' + str(clientAddr[1])

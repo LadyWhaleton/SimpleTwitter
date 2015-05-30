@@ -40,16 +40,16 @@ def clientSearch(mySocket):
 	print 'Searching by hashtags'
 
 def trySubscribe(mySocket):
-		name = raw_input('Who do you want to subscribe to?: ')
-		mySocket.send(name)
+	mySocket.send('1')	
+	name = raw_input('Who do you want to subscribe to?: ')
+	mySocket.send(name)
 			
-		# wait for server to validate user
-		tempflag = mySocket.recv(1024)
-			
-		if tempFlag == '1':
-			print 'ok'			
+	# wait for server to validate user
+	# tempflag = mySocket.recv(1024)
+		
 			
 def tryUnsubscribe(mySocket, numFollowing):
+	mySocket.send('2')	
 	# Display subscriptions
 	for i in range(0, numFollowing):
 		subUser = mySocket.recv(1024)
@@ -73,7 +73,6 @@ def clientEdit(mySocket):
 	
 	while True:
 		
-		os.system ('clear')
 		print 'You are subscribed to ' + str(numFollowing) + ' Whales.'
 		
 		print '1. Subscribe to a Whale'
@@ -92,6 +91,7 @@ def clientEdit(mySocket):
 			tryUnsubscribe(mySocket, numFollowing)		
 		
 		elif option == '~':
+			mySocket.send('~')
 			return
 			
 		else:
@@ -128,9 +128,9 @@ def login(mySocket):
 
 	while loginSuccess == '0':
 		name = raw_input ("Username: ")
-		pw = raw_input ("Password: ")
-
 		mySocket.send(name)
+		
+		pw = raw_input ("Password: ")
 		mySocket.send(pw)
 
 		data = mySocket.recv(1024)
