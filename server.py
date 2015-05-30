@@ -57,6 +57,11 @@ def serverSearch(user, conn):
 def subscribe(user, conn):
 	otherName = conn.recv(1024)
 	
+	# you can't subscribe to yourself!
+	if user.username == otherName:
+		print 'Error: You cannot subscribe to yourself!'
+		return
+	
 	for subUser in userList:
 		# if the subcription username exists
 		if subUser.username == otherName:
