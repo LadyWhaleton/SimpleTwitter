@@ -38,6 +38,34 @@ def clientView(mySocket):
 def clientSearch(mySocket):
 	mySocket.send(SEARCH)
 	print 'Searching by hashtags'
+
+def trySubscribe(mySocket):
+		name = raw_input('Who do you want to subscribe to?: ')
+		mySocket.send(name)
+			
+		# wait for server to validate user
+		tempflag = mySocket.recv(1024)
+			
+		if tempFlag == '1':
+			print 'ok'			
+			
+def tryUnsubscribe(mySocket, numFollowing):
+	# Display subscriptions
+	for i in range(0, numFollowing):
+		subUser = mySocket.recv(1024)
+		print subUser
+		
+	# select who to unsubscribe from
+	userToRemove = raw_input('Who do you want to unsubscribe from?: ')
+	
+	if  0 < int(userToRemove) and int(userToRemove) <= numFollowing:
+		mySocket.send(userToRemove)
+		msg = mySocket.recv(1024)
+		print msg	
+		
+	else:
+		print 'Error: Invalid user!'
+		mySocket.send('0')
 	
 def clientEdit(mySocket):
 	mySocket.send(EDIT)
@@ -46,7 +74,7 @@ def clientEdit(mySocket):
 	while True:
 		
 		os.system ('clear')
-		print 'You are subscribed to ' + str(numFollowing) + ' whales.'
+		print 'You are subscribed to ' + str(numFollowing) + ' Whales.'
 		
 		print '1. Subscribe to a Whale'
 		
@@ -58,19 +86,10 @@ def clientEdit(mySocket):
 		option = raw_input('What would you like to do?: ')
 		
 		if option == '1':
-			name = raw_input('Who do you want to subscribe to?: ')
-			mySocket.send(name)
-			
-			# wait for server to validate user
-			tempflag = mySocket.recv(1024)
-			
-			if tempFlag == '1':
+			trySubscribe(mySocket)
 				
-			
 		elif option == '2' and numFollowing > 0:
-			# Display subscriptions
-			for i in range(0, numFollowing):
-				
+			tryUnsubscribe(mySocket, numFollowing)		
 		
 		elif option == '~':
 			return

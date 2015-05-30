@@ -14,32 +14,9 @@ class User:
 		self.username = username
 		self.pw = pw
 		self.isOnline = False
-		self.subs = []
+		self.subscriptions = []
 		self.msg_read = []
 		self.msg_unread = []
-
-def subscribe(user, name, conn):
-	for subUser in userList:
-		# if the subcription username exists
-		if subUser.username == name:
-			# check the user already subscribed to this person
-			for subName in subUser.subs:
-				# if the name already exists in the list of subs, return
-				if subName == name:
-					return
-			# only arrive here if name doesn't exist, OK to subscribe
-			user.subs.append(name)
-			return
-			
-			
-
-# determines whether or not the user exists	and does stuff
-# used for Deleting a subscription	
-def unsubscribe(user, name, conn):
-	for u in userList:
-		if u.username == name:
-			x = 0
-	return " "
 
 def validateUser(conn, addr):
 	
@@ -77,35 +54,61 @@ def serverView(user, conn):
 def serverSearch(user, conn):
 	print "Searching by Hashtags"
 
+def subscribe(user, conn):
+	otherName = recv(1024)
+	
+	for subUser in userList:
+		# if the subcription username exists
+		if subUser.username == otherName:
+			# check the user already subscribed to this person
+			for subName in subUser.subscriptions:
+				# if the name already exists in the list of subs, return
+				if subName == otherName:
+					print 'Error: ' + user.username + ' already subscribed to' + otherName 
+					return
+			# only arrive here if name doesn't exist, OK to subscribe
+			user.subscriptions.append(otherName)
+			return
+			
+# determines whether or not the user exists	and does stuff
+# used for Deleting a subscription	
+def unsubscribe(user, conn):
+	# send subscriptions
+	for i in range(0, numFollowing):
+		currUser = user.subscriptions[i]
+		conn.send(str(i+1) + " " + currUser.username)
+	
+	# wait for user to select
+	userToRemove = conn.recv(1024)
+	
+	# invalid user
+	if userToRemove == '0':
+		return
+	
+	# search user's list of subscriptions and remove
+	otherUser = user.subscriptions[int(userToRemove)]
+	user.subscriptions.remove(otherUser)
+	conn.send ('Successfully unsubscribed to ' + otherUser) 
+	
 # serverside EditSubs
 def serverEdit(user, conn):
 	# send the number of people the user is subscribed to
-	numFollowing = len(user.subs)
+	numFollowing = len(user.subscriptions)
 	print str(numFollowing)
 	conn.send(str(numFollowing))
 	
 	# Loop 
 	while True:
 		# wait for client input
-		option = recv(1024)
+		option = conn.recv(1024)
 		
 		if option == '1':
-			username = recv(1024)
-			
-			
-			if tempFlag == True:
-				conn.send('1')
-				 
+			subscribe(user, conn)
 			
 			# conn.send('1' if userExists(username) else '0')
 			
-		elif option == '2'
-			# send subscriptions
-			for i in range(0, numFollowing):
-				currUser = user.subs[i]
-				conn.send(str(i+1) + " " + currUser.username)
-				
-			# wait for user to select 
+		elif option == '2':
+			unsubscribe(user, conn)
 		
 		elif option == '~':
 			return
