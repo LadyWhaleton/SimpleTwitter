@@ -1,5 +1,6 @@
 import socket
 import struct
+import string
 import os
 import sys
 import time
@@ -59,47 +60,59 @@ def subscribe(user, conn):
 	
 	# you can't subscribe to yourself!
 	if user.username == otherName:
-		print 'Error: You cannot subscribe to yourself!'
+		conn.send('Error: You cannot subscribe to yourself!\n')
 		return
 	
 	for subUser in userList:
 		# if the subcription username exists
 		if subUser.username == otherName:
 			# check the user already subscribed to this person
-			print 'Found user in userlist!'
 			
 			for subName in subUser.subscriptions:
 				# if the name already exists in the list of subs, return
 				if subName == otherName:
-					print 'Error: ' + user.username + ' already subscribed to' + otherName 
+					conn.send('Error: ' + user.username + ' already subscribed to' + otherName +'\n') 
 					return
 					
 			# only arrive here if otherName isn't in sublist, OK to subscribe
 			user.subscriptions.append(otherName)
-			print 'Successfully subscribed to ' + otherName
+			conn.send('Successfully subscribed to ' + otherName + '\n')
 			return
 	
-	print 'Error: ' + otherName + ' does not exist!'
+	conn.send('Error: ' + otherName + ' does not exist!\n')
 			
 # determines whether or not the user exists	and does stuff
 # used for Deleting a subscription	
-def unsubscribe(user, conn):
+def unsubscribe(user, conn, numFollowing):
 	# send subscriptions
 	for i in range(0, numFollowing):
 		currUser = user.subscriptions[i]
-		conn.send(str(i+1) + " " + currUser.username)
+		conn.send(str(i+1) + ". " + currUser)
 	
 	# wait for user to select
 	userToRemove = conn.recv(1024)
 	
-	# invalid user
-	if userToRemove == '0':
+	if not(userToRemove.isdigit()):
+		conn.send('Error: Invalid selection!\n')
 		return
+
+	if  0 < int(userToRemove) and int(userToRemove) <= numFollowing:
+		# ask if client really wants to unsubscribe
+		conn.send('unsubscribe check')
+		
+		clientChoice = conn.recv(1024)
+		otherUser = user.subscriptions[int(userToRemove)-1]
+		
+		if clientChoice == 'y' or clientChoice == 'Y':
+			# search user's list of subscriptions and remove
+			
+			user.subscriptions.remove(otherUser)
+			conn.send ('Successfully unsubscribed from ' + otherUser + '.\n')
+		else:
+			conn.send('You did not unsubscribe from ' + otherUser + '.\n')
 	
-	# search user's list of subscriptions and remove
-	otherUser = user.subscriptions[int(userToRemove)]
-	user.subscriptions.remove(otherUser)
-	conn.send ('Successfully unsubscribed to ' + otherUser) 
+	else:
+		conn.send('Error: Invalid selection!\n')
 	
 # serverside EditSubs
 def serverEdit(user, conn):
@@ -109,6 +122,7 @@ def serverEdit(user, conn):
 	
 	# Loop 
 	while True:
+		
 		# wait for client input
 		option = conn.recv(1024)
 		
@@ -118,10 +132,13 @@ def serverEdit(user, conn):
 			# conn.send('1' if userExists(username) else '0')
 			
 		elif option == '2':
-			unsubscribe(user, conn)
+			unsubscribe(user, conn, numFollowing)
 		
 		elif option == '~':
 			return
+		
+		numFollowing = len(user.subscriptions)
+		conn.send(str(numFollowing))
 
 def serverPost(user, conn):
 	print 'User wants to post a message.'

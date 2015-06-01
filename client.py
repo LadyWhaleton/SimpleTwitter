@@ -45,7 +45,8 @@ def trySubscribe(mySocket):
 	mySocket.send(name)
 			
 	# wait for server to validate user
-	# tempflag = mySocket.recv(1024)
+	msg = mySocket.recv(1024)
+	print msg
 		
 			
 def tryUnsubscribe(mySocket, numFollowing):
@@ -57,28 +58,37 @@ def tryUnsubscribe(mySocket, numFollowing):
 		
 	# select who to unsubscribe from
 	userToRemove = raw_input('Who do you want to unsubscribe from?: ')
+	mySocket.send(userToRemove)
 	
-	if  0 < int(userToRemove) and int(userToRemove) <= numFollowing:
-		mySocket.send(userToRemove)
-		msg = mySocket.recv(1024)
-		print msg	
+	msg = mySocket.recv(1024)
+	
+	if msg == 'unsubscribe check':
+		choice = raw_input('Are you sure? (y/n): ')
+		
+		if choice == 'y' or choice == 'Y':
+			mySocket.send(choice)
+		else:
+			mySocket.send('-1')
+			
+		msg2 = mySocket.recv(1024)
+		print msg2
 		
 	else:
-		print 'Error: Invalid user!'
-		mySocket.send('0')
+		print msg	
+	
 	
 def clientEdit(mySocket):
 	mySocket.send(EDIT)
-	numFollowing = int(mySocket.recv(1024))
 	
 	while True:
+		numFollowing = int(mySocket.recv(1024))
 		
-		print 'You are subscribed to ' + str(numFollowing) + ' Whales.'
+		print 'You are subscribed to ' + str(numFollowing) + ' Whale(s).'
 		
 		print '1. Subscribe to a Whale'
 		
 		if numFollowing > 0:
-			print '2. Unsubscribe a Whale'
+			print '2. Unsubscribe from a Whale'
 			
 		print '~. Return to Menu'
 		
@@ -95,7 +105,8 @@ def clientEdit(mySocket):
 			return
 			
 		else:
-			print 'Error: Invalid option! Please try again.'
+			print 'Error: Invalid option! Please try again.\n'
+			mySocket.send('-1')
 	
 	
 	
@@ -191,5 +202,5 @@ while (not(logOut)):
 			logOut = True
 			
 	else:
-			print 'Invalid option. Please try again.'
+			print 'Invalid option. Please try again.\n'
 
