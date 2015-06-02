@@ -16,6 +16,7 @@ class User:
 		self.pw = pw
 		self.isOnline = False
 		self.subscriptions = []
+		self.myEchoes = []
 		self.msg_read = []
 		self.msg_unread = []
 
@@ -142,6 +143,14 @@ def serverEdit(user, conn):
 
 def serverPost(user, conn):
 	print 'User wants to post a message.'
+	msg = conn.recv(2048)
+
+	if msg == '-1':
+		return
+
+	tags = conn.recv(1024)
+
+	# newMessage = Message()
 
 # serverside logout
 def serverLogout(user, conn, addr):

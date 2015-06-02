@@ -3,6 +3,7 @@ import struct
 import os
 import sys
 import time
+import datetime
 import curses
 import getpass
 from common import *
@@ -107,9 +108,7 @@ def clientEdit(mySocket):
 		else:
 			print 'Error: Invalid option! Please try again.\n'
 			mySocket.send('-1')
-	
-	
-	
+
 def clientPost(mySocket):
 	# client needs to write stuff for message body
 	while True:
@@ -120,19 +119,25 @@ def clientPost(mySocket):
 			print 'Error: Message must be 140 characters or less!'
 	
 	# client needs to create hashtags for this message
-	line = raw_input('Enter the tags (separated by space): ')
-	tags = line.split()
-	print tags
-		
-	print 'Echoing'
+	tags = raw_input('Enter the tags (separated by space): ')
+
+	now = datetime.datetime.now()
+	t = now.strftime("%I:%M %p") 
+	timestamp = now.strftime("%b-%d-%Y %I:%M %p")
+	print timestamp	
+			
+	# os.system('clear')
 	print msg
-	print 'Tags: ' + line
+	print 'Tags: ' + tags
 	
 	choice = raw_input('Are you sure you want to Echo this message? (y/n): ')
 	if choice == 'y' or choice == 'Y':
-		print 'OK'
+		mySocket.send(msg)
+		mySocket.send(tags)
+		
 	else:
 		print "Message was not Echo'd."
+		mySocket.send('-1')
 	
 	
 
