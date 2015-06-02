@@ -57,7 +57,7 @@ def tryUnsubscribe(mySocket, numFollowing):
 		print subUser
 		
 	# select who to unsubscribe from
-	userToRemove = raw_input('Who do you want to unsubscribe from?: ')
+	userToRemove = raw_input('Who do you want to unsubscribe from? (Pick by number): ')
 	mySocket.send(userToRemove)
 	
 	msg = mySocket.recv(1024)
@@ -111,7 +111,30 @@ def clientEdit(mySocket):
 	
 	
 def clientPost(mySocket):
-	print 'Create a message'
+	# client needs to write stuff for message body
+	while True:
+		msg = raw_input ('Enter a message to Echo: ')
+		if len(msg) <= 140:
+			break
+		else:
+			print 'Error: Message must be 140 characters or less!'
+	
+	# client needs to create hashtags for this message
+	line = raw_input('Enter the tags (separated by space): ')
+	tags = line.split()
+	print tags
+		
+	print 'Echoing'
+	print msg
+	print 'Tags: ' + line
+	
+	choice = raw_input('Are you sure you want to Echo this message? (y/n): ')
+	if choice == 'y' or choice == 'Y':
+		print 'OK'
+	else:
+		print "Message was not Echo'd."
+	
+	
 
 # clientside logout	
 def clientLogout(mySocket):
