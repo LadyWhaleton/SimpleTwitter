@@ -144,15 +144,26 @@ def serverEdit(user, conn):
 def serverPost(user, conn):
 	print 'User wants to post a message.'
 	msg = conn.recv(2048)
-
+	
+	print msg
 	if msg == '-1':
 		return
+	
+	# send OK0 to client indicating server got message
+	conn.send('OK0')
 
 	tags = conn.recv(1024)
+	conn.send('OK1') # server got tags from client
+
 	timestamp = conn.recv(1024)
+	conn.send('OK2') # server got timestamp from client
+
 	timeval = conn.recv(1024)
 
-	# newMessage = Message()
+	tagList = tags.split()
+	newMessage = Message(msg, tagList, timestamp, int(timeval))
+
+	messageList.append(newMessage)
 
 # serverside logout
 def serverLogout(user, conn, addr):
@@ -209,7 +220,7 @@ except socket.error , msg:
 
 print 'Socket bind success'
 
-messageNum = 0
+messageList = []
 userList = []
 onlineUsers = []
 

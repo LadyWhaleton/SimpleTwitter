@@ -110,6 +110,8 @@ def clientEdit(mySocket):
 			mySocket.send('-1')
 
 def clientPost(mySocket):
+	mySocket.send(POST)
+	
 	# client needs to write stuff for message body
 	while True:
 		msg = raw_input ('Enter a message to Echo: ')
@@ -120,22 +122,31 @@ def clientPost(mySocket):
 	
 	# client needs to create hashtags for this message
 	tags = raw_input('Enter the tags (separated by space): ')
-
-	now = datetime.datetime.now()
-	t = now.strftime("%I:%M %p") 
-	timestamp = now.strftime("%b-%d-%Y %I:%M %p")
-	timeval = now.strftime("%Y%m%d%H%M%S")
-			
+	
 	# os.system('clear')
 	print msg
 	print 'Tags: ' + tags
 	
 	choice = raw_input('Are you sure you want to Echo this message? (y/n): ')
 	if choice == 'y' or choice == 'Y':
+		now = datetime.datetime.now()
+		t = now.strftime("%I:%M %p") 
+		timestamp = now.strftime("%b-%d-%Y %I:%M %p")
+		timeval = now.strftime("%Y%m%d%H%M%S")
+
 		mySocket.send(msg)
-		mySocket.send(tags)
-		mySocket.send(timestamp)
-		mySocket.send(timeval)
+		
+		# wait for acknowledgement (server received message body)
+		if mySocket.recv(1024) == 'OK0':
+			mySocket.send(tags)
+
+		if mySocket.recv(1024) == 'OK1':
+			mySocket.send(timestamp)
+
+		if mySocket.recv(1024) == 'OK2':
+			mySocket.send(timeval)
+
+		# get verification that the message was received from the server
 		
 	else:
 		print "Message was not Echo'd."
