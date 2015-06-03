@@ -50,6 +50,8 @@ def trySubscribe(mySocket):
 	# wait for server to validate user
 	msg = mySocket.recv(1024)
 	print msg
+	
+	mySocket.send('OK')
 		
 			
 def tryUnsubscribe(mySocket, numFollowing):

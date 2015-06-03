@@ -1,6 +1,6 @@
-fault:
-	echo Default
-
+default:
+	echo 'hi'
+	
 getFT:
 	scp stong002@tango-9.cs.ucr.edu:~/Downloads/finalTopol.py finalTopol.py
 

@@ -60,12 +60,18 @@ def serverView(user, conn):
 def serverSearch(user, conn):
 	print "Searching by Hashtags"
 
+def waitForClientACK(conn, msg):
+	conn.send(msg)
+	
+	if conn.recv(1024) == 'OK':
+		return
+
 def subscribe(user, conn):
 	otherName = conn.recv(1024)
 	
 	# you can't subscribe to yourself!
 	if user.username == otherName:
-		conn.send('Error: You cannot subscribe to yourself!\n')
+		waitForClientACK(conn, 'Error: You cannot subscribe to yourself!\n')
 		return
 	
 	for subUser in userList:
@@ -76,15 +82,16 @@ def subscribe(user, conn):
 			for subName in subUser.subscriptions:
 				# if the name already exists in the list of subs, return
 				if subName == otherName:
-					conn.send('Error: ' + user.username + ' already subscribed to' + otherName +'\n') 
+					waitForClientACK(conn, 'Error: ' + user.username + ' already subscribed to' + otherName +'\n') 
 					return
 					
 			# only arrive here if otherName isn't in sublist, OK to subscribe
 			user.subscriptions.append(otherName)
-			conn.send('Successfully subscribed to ' + otherName + '\n')
+			waitForClientACK(conn, 'Successfully subscribed to ' + otherName + '\n')
 			return
 	
-	conn.send('Error: ' + otherName + ' does not exist!\n')
+	waitForClientACK(conn, 'Error: ' + otherName + ' does not exist!\n')
+
 			
 # determines whether or not the user exists	and does stuff
 # used for Deleting a subscription	
@@ -132,7 +139,7 @@ def serverEdit(user, conn):
 		
 		if option == '1':
 			subscribe(user, conn)
-			
+			 
 			# conn.send('1' if userExists(username) else '0')
 			
 		elif option == '2':
