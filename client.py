@@ -7,6 +7,8 @@ import datetime
 import curses
 import getpass
 from common import *
+from echo_connect import *
+from thread import *
 
 # https://www.youtube.com/watch?v=RXEOIAxgldw
 
@@ -82,6 +84,7 @@ def clientEdit(mySocket):
 	mySocket.send(EDIT)
 	
 	while True:
+		# somehow it forever waits here
 		numFollowing = int(mySocket.recv(1024))
 		
 		print 'You are subscribed to ' + str(numFollowing) + ' Whale(s).'
@@ -156,8 +159,6 @@ def clientPost(mySocket):
 		print "Message was not Echo'd."
 		mySocket.send('-1')
 	
-	
-
 # clientside logout	
 def clientLogout(mySocket):
 	print "~~~~~~~~~~~~~~~~~~~~~~~~~WhaleSpeak~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
@@ -200,6 +201,17 @@ def login(mySocket):
 	
 	return (name, int(num))
 
+def handleEchoServer(unused):
+	esock = connectEchoServer()
+	
+	while not(logOut):
+		msg = esock.recv(1024)
+		print msg
+	
+	print 'Closing esock'
+	esock.close()
+	thread.exit()
+	
 # ========================== M A I N ===========================
 host = ''
 port = 2124
@@ -211,18 +223,19 @@ try:
 
 except socket.error, msg:
 	print 'Failed to create socket. Error code: ' + str(msg[0]) + ' , Error message: ' + msg[1] 
-	sys.exit();
+	sys.exit()
 
 # try to connect to the server
 ret = sock.connect_ex ( (host, port))
 
 if ret > 0:
 	print 'Error: Unable to connect to server!'
-	exit(0)
+	sys.exit()
 	
 logOut = False
 
 username, numUnread = login(sock)
+start_new_thread(handleEchoServer, (" ", ))	
 
 # http://stackoverflow.com/questions/16790725/sending-file-from-server-to-client-python
 while (not(logOut)):

@@ -23,15 +23,15 @@ class MyTopo( Topo ):
         leftHost = self.addHost( 'c1' )
         rightHost = self.addHost( 's1' )
         leftHost2 = self.addHost( 'c2' )
-	leftHost3 = self.addHost( 'c3' )
-	leftSwitch = self.addSwitch( 'sw1' )
+		leftHost3 = self.addHost( 'c3' )
+		leftSwitch = self.addSwitch( 'sw1' )
         rightSwitch = self.addSwitch( 'sw2' )
 
         # Add links
         self.addLink( leftHost, leftSwitch )
         self.addLink( leftSwitch, rightSwitch )
         self.addLink( rightSwitch, rightHost )
-	self.addLink( leftHost2, leftSwitch)
-	self.addLink( leftHost3, leftSwitch)
+		self.addLink( leftHost2, leftSwitch)
+		self.addLink( leftHost3, leftSwitch)
 
 topos = { 'mytopo': ( lambda: MyTopo() ) }

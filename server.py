@@ -4,7 +4,8 @@ import string
 import os
 import sys
 import time
-from thread import*
+from thread import *
+from echo_connect import *
 from common import *
 
 # time.asctime(time.localtime(time.time()))
@@ -16,6 +17,7 @@ class User:
 		self.pw = pw
 		self.isOnline = False
 		self.subscriptions = []
+		self.followers = []
 		self.myEchoes = []
 		self.msg_all = []
 		self.msg_unread = []
@@ -44,6 +46,8 @@ def validateUser(conn, addr):
 	
 # initializes list of users
 def serverSetup():
+	# connect to message server
+	
 	userList.append( User ("abc", "abc") )
 	userList.append( User ("pizza", "cheese") )
 	userList.append( User ("apple", "sauce") )
@@ -123,7 +127,6 @@ def serverEdit(user, conn):
 	
 	# Loop 
 	while True:
-		
 		# wait for client input
 		option = conn.recv(1024)
 		
@@ -163,6 +166,9 @@ def serverPost(user, conn):
 	newMessage = Message(msg, tagList, timestamp, int(timeval))
 
 	messageList.append(newMessage)
+	
+	# notify echo server
+	esock.send('\nBROAAADDDCAAASSSSSTTTTT\n')
 
 # serverside logout
 def serverLogout(user, conn, addr):
@@ -200,8 +206,16 @@ def handleClient(conn, addr):
 			serverLogout(currUser, conn, addr)
 			UserLogout = True
 
-
 # ======================== M A I N ===============================
+esock = connectEchoServer()
+
+messageList = []
+userList = []
+onlineUsers = []
+offlineUsers = []
+
+serverSetup()
+
 HOST = ''
 PORT = 2124
 
@@ -218,13 +232,6 @@ except socket.error , msg:
 	sys.exit()
 
 print 'Socket bind success'
-
-messageList = []
-userList = []
-onlineUsers = []
-offlineUsers = []
-
-serverSetup()
 
 # now we listen for any incoming connections
 sock.listen(10)
