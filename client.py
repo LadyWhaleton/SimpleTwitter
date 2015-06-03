@@ -119,6 +119,10 @@ def clientPost(mySocket):
 			break
 		else:
 			print 'Error: Message must be 140 characters or less!'
+			answer = raw_input ('Try again? (y/n): ')
+			if answer != 'y' and answer != 'Y':
+				mySocket.send('-1')
+				return
 	
 	# client needs to create hashtags for this message
 	tags = raw_input('Enter the tags (separated by space): ')
@@ -182,7 +186,7 @@ def login(mySocket):
 		name = raw_input ("Username: ")
 		mySocket.send(name)
 		
-		pw = raw_input ("Password: ")
+		pw = getpass.getpass ("Password: ")
 		mySocket.send(pw)
 
 		data = mySocket.recv(1024)

@@ -142,7 +142,6 @@ def serverEdit(user, conn):
 		conn.send(str(numFollowing))
 
 def serverPost(user, conn):
-	print 'User wants to post a message.'
 	msg = conn.recv(2048)
 	
 	print msg
@@ -223,6 +222,7 @@ print 'Socket bind success'
 messageList = []
 userList = []
 onlineUsers = []
+offlineUsers = []
 
 serverSetup()
 
