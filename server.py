@@ -174,8 +174,9 @@ def serverPost(user, conn):
 
 	messageList.append(newMessage)
 	
-	# notify echo server
-	esock.send('\nBROAAADDDCAAASSSSSTTTTT\n')
+	# notify echo server if it's up
+	if not(isEchoServerDown):
+		esock.send('\nBROAAADDDCAAASSSSSTTTTT\n')
 
 # serverside logout
 def serverLogout(user, conn, addr):
@@ -214,7 +215,13 @@ def handleClient(conn, addr):
 			UserLogout = True
 
 # ======================== M A I N ===============================
+os.system('clear')
+
+isEchoServerDown = False
 esock = connectEchoServer()
+if esock == -1:
+	print 'Echo Server is down. Some functionalities will be disabled.'
+	isEchoServerDown = True	
 
 messageList = []
 userList = []
@@ -225,8 +232,6 @@ serverSetup()
 
 HOST = ''
 PORT = 2124
-
-os.system ('clear')
 
 sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
 print 'Socket created'

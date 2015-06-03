@@ -237,7 +237,15 @@ if ret > 0:
 logOut = False
 
 username, numUnread = login(sock)
-start_new_thread(handleEchoServer, (" ", ))	
+
+# attempt to connect to echoServer
+isEchoServerDown = False
+esock = connectEchoServer()
+if esock == -1:
+	print "Echo Server is down. New messages will not be Echo'd."
+	isEchoServerDown = True
+else:
+	start_new_thread(handleEchoServer, (" ", ))	
 
 # http://stackoverflow.com/questions/16790725/sending-file-from-server-to-client-python
 while (not(logOut)):
