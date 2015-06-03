@@ -10,8 +10,17 @@ def handleBroadcasts(unused):
 	while True:
 		msg = serverConn.recv(1024)
 		
+		if msg == SHUTDOWN:
+			break
+		
 		for conn in onlineUsers:
 			conn.send(msg)
+	
+	for clientConn in onlineUsers:
+		conn.close()
+	
+	killServer = True	
+	thread.exit()		
 
 # ============================= MAIN =========================
 
@@ -39,14 +48,15 @@ print 'Socket now listening'
 
 # wait for server to connect
 serverConn, serverAddr = sock.accept()
-print 'Server connected!'
+print 'Server connected at ' + serverAddr[0] + ':' + str(serverAddr[1])
 
 onlineUsers = []
+killServer = False
 
 # start a new thread that will actually do the broadcasts
 start_new_thread(handleBroadcasts, (" ", ))
 	
-while 1:
+while not(killServer):
 	# wait to accept a connection
 	clientConn, clientAddr = sock.accept()
 	onlineUsers.append(clientConn)	

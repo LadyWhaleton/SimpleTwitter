@@ -170,7 +170,7 @@ def serverPost(user, conn):
 	timeval = conn.recv(1024)
 
 	tagList = tags.split()
-	newMessage = Message(msg, tagList, timestamp, int(timeval))
+	newMessage = Message(user.username, msg, tagList, timestamp, int(timeval))
 
 	messageList.append(newMessage)
 	

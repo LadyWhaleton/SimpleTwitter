@@ -13,7 +13,8 @@ READ = 'read'
 
 # Message class
 class Message:
-	def __init__ (self, body, tags, timestamp, id):
+	def __init__ (self, author, body, tags, timestamp, id):
+		self.author = author
 		self.body = body
 		self.tags = tags
 		self.timestamp = timestamp
