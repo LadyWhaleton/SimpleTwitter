@@ -124,7 +124,7 @@ def clientPost(mySocket):
 	now = datetime.datetime.now()
 	t = now.strftime("%I:%M %p") 
 	timestamp = now.strftime("%b-%d-%Y %I:%M %p")
-	print timestamp	
+	timeval = now.strftime("%Y%m%d%H%M%S")
 			
 	# os.system('clear')
 	print msg
@@ -134,6 +134,8 @@ def clientPost(mySocket):
 	if choice == 'y' or choice == 'Y':
 		mySocket.send(msg)
 		mySocket.send(tags)
+		mySocket.send(timestamp)
+		mySocket.send(timeval)
 		
 	else:
 		print "Message was not Echo'd."

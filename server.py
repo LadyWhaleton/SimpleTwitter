@@ -17,7 +17,7 @@ class User:
 		self.isOnline = False
 		self.subscriptions = []
 		self.myEchoes = []
-		self.msg_read = []
+		self.msg_all = []
 		self.msg_unread = []
 
 def validateUser(conn, addr):
@@ -149,6 +149,8 @@ def serverPost(user, conn):
 		return
 
 	tags = conn.recv(1024)
+	timestamp = conn.recv(1024)
+	timeval = conn.recv(1024)
 
 	# newMessage = Message()
 
