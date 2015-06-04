@@ -11,6 +11,7 @@ from common import *
 # time.asctime(time.localtime(time.time()))
 # http://python.readthedocs.org/en/latest/howto/curses.html
 
+# ================== Server setup related functions ==========================
 class User:
 	def __init__ (self, username, pw):
 		self.username = username
@@ -42,15 +43,56 @@ def validateUser(conn, addr):
 		if not(validUser):
 			print 'Client' + addr[0] + ':' + str(addr[1]) + ', ' + username + 'unauthorized user.'
 			conn.send ('0') 
-			
-	
+
 # initializes list of users
-def serverSetup():
-	# connect to message server
+def setupServer():
+	HOST = ''
+	PORT = 2124
+
+	s = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
+	print 'Server socket created'
+
+	# try to bind the socket
+	try:
+		s.bind ( (HOST, PORT) )
+	except socket.error , msg:
+		print 'Bind failed. Error code: ' + str(msg[0]) + ' Message ' + msg[1]
+		sys.exit()
+
+	print 'Server socket bind success'
 	
 	userList.append( User ("abc", "abc") )
 	userList.append( User ("pizza", "cheese") )
 	userList.append( User ("apple", "sauce") )
+	
+	return s
+			
+def setupEchoer():
+	HOST = ''
+	PORT = 1337
+
+	s = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
+	print 'Echo socket created'
+
+	# try to bind the socket
+	try:
+		s.bind ( (HOST, PORT) )
+	except socket.error , msg:
+		print 'Bind failed. Error code: ' + str(msg[0]) + ' Message ' + msg[1]
+		sys.exit()
+
+	print 'Echo socket bind success'
+	
+# ===================== echo thread ===================================
+def handleEchoes(unused):
+	print 'doing nothing atm'
+	
+	while not(SHUTDOWN):
+		x = 0
+	
+	thread.exit()
+				
+# ============================== other functions ======================
 
 # serverside ViewOffline
 def serverView(user, conn):
@@ -64,7 +106,6 @@ def serverFindTag(tag, tagList):
 
 # serverside SearchByHashTag	
 def serverSearch(user, conn):
-	print "Searching by Hashtags"
 	
 	while True:
 		tag = conn.recv(1024)
@@ -100,8 +141,9 @@ def serverSearch(user, conn):
 def waitForClientACK(conn, msg):
 	conn.send(msg)
 	
-	if conn.recv(1024) == 'OK':
-		return
+	while True:
+		if conn.recv(1024) == 'OK':
+			return
 
 def subscribe(user, conn):
 	otherName = conn.recv(1024)
@@ -144,7 +186,8 @@ def unsubscribe(user, conn, numFollowing):
 	if not(userToRemove.isdigit()):
 		conn.send('Error: Invalid selection!\n')
 		return
-
+	
+	# check if the user inputted the appropriate number
 	if  0 < int(userToRemove) and int(userToRemove) <= numFollowing:
 		# ask if client really wants to unsubscribe
 		conn.send('unsubscribe check')
@@ -254,6 +297,7 @@ def handleClient(conn, addr):
 # ======================== M A I N ===============================
 os.system('clear')
 
+SHUTDOWN = False
 isEchoServerDown = False
 esock = connectEchoServer()
 if esock == -1:
@@ -265,26 +309,13 @@ userList = []
 onlineUsers = []
 offlineUsers = []
 
-serverSetup()
-
-HOST = ''
-PORT = 2124
-
-sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
-print 'Socket created'
-
-# try to bind the socket
-try:
-	sock.bind ( (HOST, PORT) )
-except socket.error , msg:
-	print 'Bind failed. Error code: ' + str(msg[0]) + ' Message ' + msg[1]
-	sys.exit()
-
-print 'Socket bind success'
+sock = setupServer()
+print '~~~~~~~~~~~~~~~~~~~~~~'
+esock = setupEchoer()
+start_new_thread(handleEchoes, (" ", ) )
 
 # now we listen for any incoming connections
 sock.listen(10)
-
 print 'Socket now listening'
 
 # Maybe make a admin thread????
@@ -301,3 +332,4 @@ while 1:
 	start_new_thread(handleClient, (conn, clientAddr) )		
 
 sock.close()
+esock.close()
