@@ -7,21 +7,13 @@ import time
 from thread import *
 from echo_connect import *
 from common import *
+from message import *
+from users import *
 
 # time.asctime(time.localtime(time.time()))
 # http://python.readthedocs.org/en/latest/howto/curses.html
 
 # ================== Server setup related functions ==========================
-class User:
-	def __init__ (self, username, pw):
-		self.username = username
-		self.pw = pw
-		self.isOnline = False
-		self.subscriptions = []
-		self.followers = []
-		self.myEchoes = []
-		self.msg_all = []
-		self.msg_unread = []
 
 def validateUser(conn, addr):
 	
@@ -61,9 +53,10 @@ def setupServer():
 
 	print 'Server socket bind success'
 	
-	userList.append( User ("abc", "abc") )
-	userList.append( User ("pizza", "cheese") )
-	userList.append( User ("apple", "sauce") )
+	userList.append(USER1)
+	userList.append(USER2)
+	userList.append(USER3)
+	userList.append(USER4)
 	
 	return s
 			
@@ -87,10 +80,10 @@ def setupEchoer():
 def handleEchoes(unused):
 	print 'doing nothing atm'
 	
-	while not(SHUTDOWN):
-		x = 0
-	
-	thread.exit()
+	#while not(SHUTDOWN):
+	#x = 0
+	print 'exiting thread'	
+	return
 				
 # ============================== other functions ======================
 
@@ -307,7 +300,7 @@ if esock == -1:
 messageList = []
 userList = []
 onlineUsers = []
-offlineUsers = []
+#print myList["Wailord"].pw
 
 sock = setupServer()
 print '~~~~~~~~~~~~~~~~~~~~~~'
