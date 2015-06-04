@@ -40,7 +40,39 @@ def clientView(mySocket):
 
 def clientSearch(mySocket):
 	mySocket.send(SEARCH)
-	print 'Searching by hashtags'
+	
+	while True:
+ 		os.system('clear')           
+		tag = raw_input('What tag to search by?: ')
+		mySocket.send(tag)
+		
+		# display all of the messages
+		msg = ""
+		while ( msg != 'STOP'):
+			msg = mySocket.recv(2048)
+			
+			# check if that were all of the messages with the tag
+			if msg != 'STOP':
+				print msg
+				mySocket.send('OK')
+		
+		# send final acknowledgement
+		mySocket.send('OK')
+		 
+		# check if there weren't any messages to output
+		check = mySocket.recv(1024)
+		if check == 'none':
+			print 'No Echoes were detected with ' + tag + '.'
+		
+		# ask the user if they want to search again
+		choice = raw_input('Search again? (y/n): ')
+		mySocket.send(choice)
+		
+		# wait until server receives the choice
+		mySocket.recv(1024)
+		
+		if choice != 'y' and choice != 'Y':
+			break
 
 def trySubscribe(mySocket):
 	mySocket.send('1')	
@@ -133,7 +165,7 @@ def clientPost(mySocket):
 	tags = raw_input('Enter the tags (separated by space): ')
 	
 	# os.system('clear')
-	print msg
+	print 'Message: ' + msg
 	print 'Tags: ' + tags
 	
 	choice = raw_input('Are you sure you want to Echo this message? (y/n): ')

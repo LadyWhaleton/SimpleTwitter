@@ -56,9 +56,46 @@ def serverSetup():
 def serverView(user, conn):
 	print 'View Offline Messages'
 
+def serverFindTag(tag, tagList):
+	for t in tagList:
+		if t == tag:
+			return True
+	return False
+
 # serverside SearchByHashTag	
 def serverSearch(user, conn):
 	print "Searching by Hashtags"
+	
+	while True:
+		tag = conn.recv(1024)
+		length = len(messageList)
+		
+		ctr = 0
+		for i in range(length):
+			if ctr == 10:
+				break
+			
+			message = messageList[i]
+			tagFound = serverFindTag(tag, message.tagList)
+			
+			if tagFound:
+				waitForClientACK(conn, str(ctr+1) + '. ' + message.formatMessage())
+				ctr += 1
+		
+		# wait for final acknowledgement indicating user received all messages
+		waitForClientACK(conn, 'STOP')
+		
+		# check if ctr was zero (no messages with the tag)
+		if ctr == 0:
+			conn.send('none')
+		else:
+			conn.send('good')
+		
+		clientChoice = conn.recv(1024)
+		conn.send('OK') # send ack
+		# if user doesn't want to search again, break
+		if clientChoice != 'y' and clientChoice != 'Y':
+			break
 
 def waitForClientACK(conn, msg):
 	conn.send(msg)
@@ -154,7 +191,6 @@ def serverEdit(user, conn):
 def serverPost(user, conn):
 	msg = conn.recv(2048)
 	
-	print msg
 	if msg == '-1':
 		return
 	
@@ -170,9 +206,10 @@ def serverPost(user, conn):
 	timeval = conn.recv(1024)
 
 	tagList = tags.split()
-	newMessage = Message(user.username, msg, tagList, timestamp, int(timeval))
+	newMessage = Message(user.username, msg, tags, tagList, timestamp, int(timeval))
 
-	messageList.append(newMessage)
+	# messageList.append(newMessage)
+	messageList.insert(0, newMessage)
 	
 	# notify echo server if it's up
 	if not(isEchoServerDown):
