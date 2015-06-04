@@ -23,18 +23,17 @@ def validateUser(conn, addr):
 		username = conn.recv(1024)
 		pw = conn.recv (1024)
 		
-		for user in userList:
-			if user.username == username and user.pw == pw:
-				print 'Client ' + addr[0] + ':' + str(addr[1]) + ', ' + username + ' is authorized.'
-				validUser = True
-				user.isOnline = True
-				msg = '1 ' + str(len(user.msg_unread))
-				conn.send (msg) 
-				return user
+		# if there's a user with that username in Userlist, don't short circuit
+		# it the above if-statement is true, check if the pw is correct
+		if UserList.has_key(username) and UserList[username].pw == pw:
+			print 'Client ' + addr[0] + ':' + str(addr[1]) + ', ' + username + ' is authorized.'
+			validUser = True
+			msg = '1 ' + str(len(UserList[username].msg_unread))
+			conn.send (msg) 
+			return username
 
-		if not(validUser):
-			print 'Client' + addr[0] + ':' + str(addr[1]) + ', ' + username + 'unauthorized user.'
-			conn.send ('0') 
+		print 'Client' + addr[0] + ':' + str(addr[1]) + ', ' + username + ' unauthorized user.'
+		conn.send ('0') 			
 
 # initializes list of users
 def setupServer():
@@ -88,7 +87,7 @@ def handleEchoes(unused):
 # ============================== other functions ======================
 
 # serverside ViewOffline
-def serverView(user, conn):
+def serverView(username, conn):
 	print 'View Offline Messages'
 
 def serverFindTag(tag, tagList):
@@ -98,7 +97,7 @@ def serverFindTag(tag, tagList):
 	return False
 
 # serverside SearchByHashTag	
-def serverSearch(user, conn):
+def serverSearch(username, conn):
 	
 	while True:
 		tag = conn.recv(1024)
@@ -138,40 +137,22 @@ def waitForClientACK(conn, msg):
 		if conn.recv(1024) == 'OK':
 			return
 
-def subscribe(user, conn):
+def subscribe(username, conn):
 	otherName = conn.recv(1024)
 	
-	# you can't subscribe to yourself!
-	if user.username == otherName:
-		waitForClientACK(conn, 'Error: You cannot subscribe to yourself!\n')
-		return
+	val, msg = UserList[username].follow(otherName)
+	waitForClientACK(conn, msg)
 	
-	for subUser in userList:
-		# if the subcription username exists
-		if subUser.username == otherName:
-			# check the user already subscribed to this person
-			
-			for subName in subUser.subscriptions:
-				# if the name already exists in the list of subs, return
-				if subName == otherName:
-					waitForClientACK(conn, 'Error: ' + user.username + ' already subscribed to' + otherName +'\n') 
-					return
-					
-			# only arrive here if otherName isn't in sublist, OK to subscribe
-			user.subscriptions.append(otherName)
-			waitForClientACK(conn, 'Successfully subscribed to ' + otherName + '\n')
-			return
-	
-	waitForClientACK(conn, 'Error: ' + otherName + ' does not exist!\n')
+	return 
 
 			
 # determines whether or not the user exists	and does stuff
 # used for Deleting a subscription	
-def unsubscribe(user, conn, numFollowing):
+def unsubscribe(username, conn, numFollowing):
 	# send subscriptions
 	for i in range(0, numFollowing):
-		currUser = user.subscriptions[i]
-		conn.send(str(i+1) + ". " + currUser)
+		currUser = UserList[username].subscriptions[i]
+		waitForClientACK(conn, str(i+1) + ". " + currUser)
 	
 	# wait for user to select
 	userToRemove = conn.recv(1024)
@@ -186,23 +167,25 @@ def unsubscribe(user, conn, numFollowing):
 		conn.send('unsubscribe check')
 		
 		clientChoice = conn.recv(1024)
-		otherUser = user.subscriptions[int(userToRemove)-1]
+		otherUser = UserList[username].subscriptions[int(userToRemove)-1]
 		
 		if clientChoice == 'y' or clientChoice == 'Y':
 			# search user's list of subscriptions and remove
 			
-			user.unfollow(otherUser)
-			conn.send ('Successfully unsubscribed from ' + otherUser + '.\n')
+			UserList[username].unfollow(otherUser)
+			UserList[otherUser].removeFollower(username)
+			
+			conn.send ('You are no longer following ' + otherUser + '.\n')
 		else:
-			conn.send('You did not unsubscribe from ' + otherUser + '.\n')
+			conn.send('You are still following ' + otherUser + '.\n')
 	
 	else:
 		conn.send('Error: Invalid selection!\n')
 	
 # serverside EditSubs
-def serverEdit(user, conn):
+def serverEdit(username, conn):
 	# send the number of people the user is subscribed to
-	numFollowing = len(user.subscriptions)
+	numFollowing = len(UserList[username].subscriptions)
 	conn.send(str(numFollowing))
 	
 	# Loop 
@@ -211,20 +194,20 @@ def serverEdit(user, conn):
 		option = conn.recv(1024)
 		
 		if option == '1':
-			subscribe(user, conn)
+			subscribe(username, conn)
 			 
 			# conn.send('1' if userExists(username) else '0')
 			
 		elif option == '2':
-			unsubscribe(user, conn, numFollowing)
+			unsubscribe(username, conn, numFollowing)
 		
 		elif option == '~':
 			return
 		
-		numFollowing = len(user.subscriptions)
+		numFollowing = len(UserList[username].subscriptions)
 		conn.send(str(numFollowing))
 
-def serverPost(user, conn):
+def serverPost(username, conn):
 	msg = conn.recv(2048)
 	
 	if msg == '-1':
@@ -242,19 +225,19 @@ def serverPost(user, conn):
 	timeval = conn.recv(1024)
 
 	tagList = tags.split()
-	newMessage = Message(user.username, msg, tags, tagList, timestamp, int(timeval))
+	newMessage = Message(username, msg, tags, tagList, timestamp, int(timeval))
 
-	# messageList.append(newMessage)
 	messageList.insert(0, newMessage)
+	UserList[username].addMyEcho(newMessage)
 	
 	# notify echo server if it's up
 	if not(isEchoServerDown):
 		esock.send('\nBROAAADDDCAAASSSSSTTTTT\n')
 
 # serverside logout
-def serverLogout(user, conn, addr):
-	user.isOnline = False
-	print user.username + " is logging out."
+def serverLogout(username, conn, addr):
+	UserList[username].isOnline = False
+	print username + " is logging out."
 	conn.close()
 	
 def handleClient(conn, addr):

@@ -92,6 +92,7 @@ def tryUnsubscribe(mySocket, numFollowing):
 	for i in range(0, numFollowing):
 		subUser = mySocket.recv(1024)
 		print subUser
+		mySocket.send('OK')
 		
 	# select who to unsubscribe from
 	userToRemove = raw_input('Who do you want to unsubscribe from? (Pick by number): ')
