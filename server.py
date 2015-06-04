@@ -191,7 +191,7 @@ def unsubscribe(user, conn, numFollowing):
 		if clientChoice == 'y' or clientChoice == 'Y':
 			# search user's list of subscriptions and remove
 			
-			user.subscriptions.remove(otherUser)
+			user.unfollow(otherUser)
 			conn.send ('Successfully unsubscribed from ' + otherUser + '.\n')
 		else:
 			conn.send('You did not unsubscribe from ' + otherUser + '.\n')
@@ -300,7 +300,6 @@ if esock == -1:
 messageList = []
 userList = []
 onlineUsers = []
-#print myList["Wailord"].pw
 
 sock = setupServer()
 print '~~~~~~~~~~~~~~~~~~~~~~'
@@ -316,7 +315,7 @@ print 'Socket now listening'
 while 1:
 	# wait to accept a connection
 	conn, clientAddr = sock.accept()
-	onlineUsers.append(conn)	
+	onlineUsers.append(conn) #maybe we want to append this somewhere else..
 	
 	# display client info
 	print 'Connected with ' + clientAddr[0] + ':' + str(clientAddr[1])
