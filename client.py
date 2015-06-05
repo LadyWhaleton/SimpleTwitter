@@ -244,7 +244,8 @@ def handleEchoPort(unused):
 		print msg
 	
 	esock.close()
-	thread.exit()
+	# thread.exit()
+	return
 	
 # ========================== M A I N ===========================
 host = ''
@@ -270,7 +271,7 @@ if ret > 0:
 isEchoServerDown = False
 esock = connectEchoServer()
 if esock == -1:
-	print "Echo Server is down. New messages will not be Echo'd."
+	print "Echo Port is down. New messages will not be Echo'd."
 	isEchoServerDown = True
 else:
 	start_new_thread(handleEchoPort, (" ", ))	

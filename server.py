@@ -98,7 +98,7 @@ def handleEchoPorts(unused):
 		event.clear()
 		if (len(recentlyConnected) > 1):
 			recentlyConnected.pop(0)
-				
+		
 		recentlyConnected.insert(0, echoClient)
 		event.set()
 	
@@ -297,12 +297,6 @@ def handleClient(conn, addr):
 os.system('clear')
 
 SHUTDOWN = False
-isEchoServerDown = False
-# esock = connectEchoServer()
-esock = -1
-if esock == -1:
-	print 'Echo Server is down. Some functionalities will be disabled.'
-	isEchoServerDown = True	
 
 messageList = []
 userList = []
@@ -323,7 +317,7 @@ start_new_thread(handleEchoPorts, (" ", ))
 while 1:
 	# wait to accept a connection
 	conn, clientAddr = sock.accept()
-	onlineUsers.append(conn) #maybe we want to append this somewhere else..
+	onlineUsers.append(conn) # unused
 	
 	# display client info
 	print 'Connected with ' + clientAddr[0] + ':' + str(clientAddr[1])
