@@ -5,6 +5,7 @@ import os
 import sys
 import time
 from thread import *
+import threading
 from echo_connect import *
 from common import *
 from message import *
@@ -12,6 +13,12 @@ from users import *
 
 # time.asctime(time.localtime(time.time()))
 # http://python.readthedocs.org/en/latest/howto/curses.html
+
+def setNewestUser(newUser):
+	newestUser = newUser
+
+def getNewestUser():
+	return newestUser
 
 # ================== Server setup related functions ==========================
 
@@ -60,31 +67,43 @@ def setupServer():
 	return s
 			
 def setupEchoer():
-	HOST = ''
-	PORT = 1337
+	host = ''
+	port = 1338
 
-	s = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
+	es = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
 	print 'Echo socket created'
 
 	# try to bind the socket
 	try:
-		s.bind ( (HOST, PORT) )
+		es.bind ( (host, port) )
 	except socket.error , msg:
-		print 'Bind failed. Error code: ' + str(msg[0]) + ' Message ' + msg[1]
+		print 'Echo bind failed. Error code: ' + str(msg[0]) + ' Message ' + msg[1]
 		sys.exit()
 
 	print 'Echo socket bind success'
+
+	return es
 	
 # ===================== echo thread ===================================
-def handleEchoes(unused):
-	print 'doing nothing atm'
+def handleEchoPorts(unused):
+
+	EchoSocket = setupEchoer()
+	print 'Echo socket now listening'
+
+	EchoSocket.listen(10)
+
+	while not(SHUTDOWN):
+		echoClient, echoClientAddr = EchoSocket.accept()
+		
+		# wait until there's a new user assigned
+		event.wait()		
+
+		print 'New user connected to Echo port!'
+		UserList[recentlyConnected[0]].goOnline(echoClient) 	
 	
-	#while not(SHUTDOWN):
-	#x = 0
-	print 'exiting thread'	
 	return
 				
-# ============================== other functions ======================
+# ============================== server functions ======================
 
 # serverside ViewOffline
 def serverView(username, conn):
@@ -207,6 +226,31 @@ def serverEdit(username, conn):
 		numFollowing = len(UserList[username].subscriptions)
 		conn.send(str(numFollowing))
 
+def distributeEchos(poster, newMessage):
+	list_items = UserList.items()
+	for user in list_items:
+		username = user[0]
+
+		# if the user is offline and isn't the poster
+		if poster != username and UserList[username].status == OFFLINE:
+			print username + ' is offline.'
+			
+			# if the user is offline and follows the poster, add to unread messages
+			if UserList[username].isFollowing(poster):
+				print username + ' is following ' + poster + ' and is offline.'
+				UserList[username].addUnread(newMessage)
+
+		# if the user is online and isn't the poster
+		elif poster != username and UserList[username].status == ONLINE:
+			print username + 'is online.'
+
+			# if the user is online and follows the poster, broadcast
+			if UserList[username].isFollowing(poster):
+				print username + ' is following ' + poster + ' and is online.'
+				followerPort = UserList[username].port
+				follwerPort.send (newMessage.formatMessage())
+
+
 def serverPost(username, conn):
 	msg = conn.recv(2048)
 	
@@ -230,13 +274,15 @@ def serverPost(username, conn):
 	messageList.insert(0, newMessage)
 	UserList[username].addMyEcho(newMessage)
 	
+	distributeEchos(username, newMessage)
+	
 	# notify echo server if it's up
 	if not(isEchoServerDown):
 		esock.send('\nBROAAADDDCAAASSSSSTTTTT\n')
 
 # serverside logout
 def serverLogout(username, conn, addr):
-	UserList[username].isOnline = False
+	UserList[username].goOffline()
 	print username + " is logging out."
 	conn.close()
 	
@@ -244,8 +290,13 @@ def handleClient(conn, addr):
 	# Sending message to client
 	conn.send ('Please log in.')
 	
-	# Validate the user
+	# Validate the user and login if validated
+	event.clear()
 	currUser = validateUser(conn, addr)
+	recentlyConnected.insert(0, currUser)
+	# set global flag
+	event.set()
+	event.clear()
 	
 	UserLogout = False
 	
@@ -275,7 +326,8 @@ os.system('clear')
 
 SHUTDOWN = False
 isEchoServerDown = False
-esock = connectEchoServer()
+# esock = connectEchoServer()
+esock = -1
 if esock == -1:
 	print 'Echo Server is down. Some functionalities will be disabled.'
 	isEchoServerDown = True	
@@ -283,15 +335,16 @@ if esock == -1:
 messageList = []
 userList = []
 onlineUsers = []
+recentlyConnected  = []
+
+event = threading.Event()
 
 sock = setupServer()
-print '~~~~~~~~~~~~~~~~~~~~~~'
-esock = setupEchoer()
-start_new_thread(handleEchoes, (" ", ) )
-
-# now we listen for any incoming connections
 sock.listen(10)
-print 'Socket now listening'
+print 'Server socket now listening'
+print '~~~~~~~~~~~~~~~~~~~~~'
+
+start_new_thread(handleEchoPorts, (" ", ))
 
 # Maybe make a admin thread????
 	
@@ -307,4 +360,3 @@ while 1:
 	start_new_thread(handleClient, (conn, clientAddr) )		
 
 sock.close()
-esock.close()

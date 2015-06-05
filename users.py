@@ -6,21 +6,20 @@ class User:
 		self.username = username
 		self.pw = pw
 		self.status = OFFLINE
+		self.port = -1
 		self.subscriptions = []
 		self.followers = []
 		self.myEchoes = []
-		self.msg_all = []
-		self.msg_unread = []
+		self.msg_all = []	#all messages from all my subcriptions
+		self.msg_unread = []	#unread messages from my subcriptions
 	
 	def goOnline(self, echo_conn):
-		userList[self.username].status = ONLINE
-		userStatus[self.username] = ONLINE
-		userConnections[self.username] = echo_conn
+		self.status = ONLINE
+		self.port = echo_conn
 	
 	def goOffline(self):
-		userList[self.username].status = OFFLINE
-		userStatus[self.username] = OFFLINE
-		userConnections[self.username] = -1
+		self.status = OFFLINE
+		self.port = -1
 		
 	def follow(self, otherUser):
 		if self.username == otherUser:
@@ -48,7 +47,17 @@ class User:
 		
 	def addUnread(self, msg):
 		self.msg_unread.insert(0, msg)
-		
+	
+	def isFollowing(self, otherUser):
+		otherUserFollowers = UserList[otherUser].followers
+		for name in otherUserFollowers:
+			# if you found your name om the otherUser's followers
+			if self.username == name:
+				return True
+
+		return False
+			
+	
 NAME1 = "Wailord"
 NAME2 = "Orca"
 NAME3 = "abc"
@@ -65,6 +74,7 @@ userStatus = {NAME1:OFFLINE, NAME2:OFFLINE, NAME3:OFFLINE, NAME4:OFFLINE}
 # other dictionaries
 userConnections = {NAME1:-1, NAME2:-1, NAME3:-1, NAME4:-1}
 UserList = {NAME1:USER1, NAME2:USER2, NAME3:USER3, NAME4:USER4}
+userList = [NAME1, NAME2, NAME3, NAME4]
 
 # sample usages
 # print UserList["Wailord"].pw

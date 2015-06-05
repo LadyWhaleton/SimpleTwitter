@@ -236,12 +236,12 @@ def login(mySocket):
 	
 	return (name, int(num))
 
-def handleEchoServer(unused):
+def handleEchoPort(unused):
 	esock = connectEchoServer()
 	
 	while not(logOut):
 		msg = esock.recv(1024)
-		print msg
+		#print msg
 	
 	print 'Closing esock'
 	esock.close()
@@ -251,7 +251,7 @@ def handleEchoServer(unused):
 host = ''
 port = 2124
 
-os.system ('clear')
+# os.system ('clear')
 
 try:
 	sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
@@ -266,10 +266,6 @@ ret = sock.connect_ex ( (host, port))
 if ret > 0:
 	print 'Error: Unable to connect to server!'
 	sys.exit()
-	
-logOut = False
-
-username, numUnread = login(sock)
 
 # attempt to connect to echoServer
 isEchoServerDown = False
@@ -278,7 +274,13 @@ if esock == -1:
 	print "Echo Server is down. New messages will not be Echo'd."
 	isEchoServerDown = True
 else:
-	start_new_thread(handleEchoServer, (" ", ))	
+	start_new_thread(handleEchoPort, (" ", ))	
+
+
+logOut = False
+
+username, numUnread = login(sock)
+
 
 # http://stackoverflow.com/questions/16790725/sending-file-from-server-to-client-python
 while (not(logOut)):

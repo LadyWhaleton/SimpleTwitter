@@ -2,7 +2,7 @@ import socket
 
 def connectEchoServer():
 	echoHost = ''
-	echoPort = 1337
+	echoPort = 1338
 	
 	try: 
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
