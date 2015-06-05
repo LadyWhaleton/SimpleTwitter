@@ -24,11 +24,15 @@ class User:
 	def follow(self, otherUser):
 		if self.username == otherUser:
 			return -1, 'Error: You cannot follow yourself!\n'
-			
+		
+		# check if you're already following someone	
 		for subName in self.subscriptions:
 			if subName == otherUser:
 				return -1, 'Error: ' + self.username + ' already following' + otherUser +'\n'
 		
+		if not(UserList.has_key(otherUser)):
+			return -1, 'Error: ' + otherUser + ' does not exist in user database!\n'
+
 		self.subscriptions.append(otherUser)
 		UserList[otherUser].addFollower(self.username)
 		return 1, 'You are now following ' + otherUser+ '\n'
@@ -56,7 +60,17 @@ class User:
 				return True
 
 		return False
-			
+
+	def echoToFollowers(self, message):
+		for follower in self.followers:
+			if UserList[follower].status == ONLINE:
+				followerPort = UserList[follower].port
+				print follower + ' ' +  str(followerPort)
+				print UserList[self.username].port
+				followerPort.send(message.formatMessage())
+
+			else:
+				UserList[follower].addUnread(message)			
 	
 NAME1 = "Wailord"
 NAME2 = "Orca"

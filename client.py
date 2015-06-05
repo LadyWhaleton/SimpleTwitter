@@ -240,8 +240,8 @@ def handleEchoPort(unused):
 	esock = connectEchoServer()
 	
 	while not(logOut):
-		msg = esock.recv(1024)
-		#print msg
+		msg = esock.recv(2048)
+		print msg
 	
 	print 'Closing esock'
 	esock.close()
@@ -251,7 +251,7 @@ def handleEchoPort(unused):
 host = ''
 port = 2124
 
-# os.system ('clear')
+os.system ('clear')
 
 try:
 	sock = socket.socket (socket.AF_INET, socket.SOCK_STREAM)

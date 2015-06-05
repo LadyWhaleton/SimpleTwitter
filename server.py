@@ -98,7 +98,7 @@ def handleEchoPorts(unused):
 		# wait until there's a new user assigned
 		event.wait()		
 
-		print 'New user connected to Echo port!'
+		print recentlyConnected[0] + ' connected to Echo port! ' + str(echoClient)
 		UserList[recentlyConnected[0]].goOnline(echoClient) 	
 	
 	return
@@ -108,6 +108,10 @@ def handleEchoPorts(unused):
 # serverside ViewOffline
 def serverView(username, conn):
 	print 'View Offline Messages'
+
+	unreadMessages = UserList[username].msg_unread
+	for message in unreadMessages:
+		print message.formatMessage()
 
 def serverFindTag(tag, tagList):
 	for t in tagList:
@@ -226,30 +230,6 @@ def serverEdit(username, conn):
 		numFollowing = len(UserList[username].subscriptions)
 		conn.send(str(numFollowing))
 
-def distributeEchos(poster, newMessage):
-	list_items = UserList.items()
-	for user in list_items:
-		username = user[0]
-
-		# if the user is offline and isn't the poster
-		if poster != username and UserList[username].status == OFFLINE:
-			print username + ' is offline.'
-			
-			# if the user is offline and follows the poster, add to unread messages
-			if UserList[username].isFollowing(poster):
-				print username + ' is following ' + poster + ' and is offline.'
-				UserList[username].addUnread(newMessage)
-
-		# if the user is online and isn't the poster
-		elif poster != username and UserList[username].status == ONLINE:
-			print username + 'is online.'
-
-			# if the user is online and follows the poster, broadcast
-			if UserList[username].isFollowing(poster):
-				print username + ' is following ' + poster + ' and is online.'
-				followerPort = UserList[username].port
-				follwerPort.send (newMessage.formatMessage())
-
 
 def serverPost(username, conn):
 	msg = conn.recv(2048)
@@ -273,12 +253,7 @@ def serverPost(username, conn):
 
 	messageList.insert(0, newMessage)
 	UserList[username].addMyEcho(newMessage)
-	
-	distributeEchos(username, newMessage)
-	
-	# notify echo server if it's up
-	if not(isEchoServerDown):
-		esock.send('\nBROAAADDDCAAASSSSSTTTTT\n')
+	UserList[username].echoToFollowers(newMessage)	
 
 # serverside logout
 def serverLogout(username, conn, addr):
