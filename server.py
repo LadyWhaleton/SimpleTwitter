@@ -95,11 +95,12 @@ def handleEchoPorts(unused):
 	while not(SHUTDOWN):
 		echoClient, echoClientAddr = EchoSocket.accept()
 		
-		# wait until there's a new user assigned
-		event.wait()		
-
-		print recentlyConnected[0] + ' connected to Echo port! ' + str(echoClient)
-		UserList[recentlyConnected[0]].goOnline(echoClient) 	
+		event.clear()
+		if (len(recentlyConnected) > 1):
+			recentlyConnected.pop(0)
+				
+		recentlyConnected.insert(0, echoClient)
+		event.set()
 	
 	return
 				
@@ -266,13 +267,9 @@ def handleClient(conn, addr):
 	conn.send ('Please log in.')
 	
 	# Validate the user and login if validated
-	event.clear()
 	currUser = validateUser(conn, addr)
-	recentlyConnected.insert(0, currUser)
-	# set global flag
-	event.set()
-	event.clear()
-	
+	event.wait()
+	UserList[currUser].goOnline(recentlyConnected[0])	
 	UserLogout = False
 	
 	# Infinite loop
@@ -310,7 +307,7 @@ if esock == -1:
 messageList = []
 userList = []
 onlineUsers = []
-recentlyConnected  = []
+recentlyConnected = []
 
 event = threading.Event()
 

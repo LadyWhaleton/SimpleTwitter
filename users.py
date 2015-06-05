@@ -65,9 +65,7 @@ class User:
 		for follower in self.followers:
 			if UserList[follower].status == ONLINE:
 				followerPort = UserList[follower].port
-				print follower + ' ' +  str(followerPort)
-				print UserList[self.username].port
-				followerPort.send(message.formatMessage())
+				followerPort.send('\n' + message.formatMessage())
 
 			else:
 				UserList[follower].addUnread(message)			
