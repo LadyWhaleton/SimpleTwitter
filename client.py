@@ -243,7 +243,6 @@ def handleEchoPort(unused):
 		msg = esock.recv(2048)
 		print msg
 	
-	print 'Closing esock'
 	esock.close()
 	thread.exit()
 	

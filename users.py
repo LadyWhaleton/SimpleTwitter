@@ -84,7 +84,6 @@ USER4 = User(NAME4, "squirrels")
 userStatus = {NAME1:OFFLINE, NAME2:OFFLINE, NAME3:OFFLINE, NAME4:OFFLINE}
 
 # other dictionaries
-userConnections = {NAME1:-1, NAME2:-1, NAME3:-1, NAME4:-1}
 UserList = {NAME1:USER1, NAME2:USER2, NAME3:USER3, NAME4:USER4}
 userList = [NAME1, NAME2, NAME3, NAME4]
 
