@@ -5,5 +5,6 @@
 VIEW = '1'
 SEARCH = '2'
 EDIT = '3'
-POST = '4'
-LOGOUT = '5'
+FOLLOWERS = '4'
+POST = '5'
+LOGOUT = '6'

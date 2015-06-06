@@ -93,6 +93,22 @@ def handleEchoPorts(unused):
 	return
 				
 # ============================== server functions ======================
+def sendFollowers(username, conn):
+	allFollowers = UserList[username].followers
+	numFollowers = len(allFollowers)
+	
+	if numFollowers < 1:
+		conn.send('You have no followers!')
+		return
+	else:
+		waitForClientACK(conn, 'You have ' + str(numFollowers) + ' follower(s).')
+		
+	ctr = 1
+	for follower in allFollowers:
+		waitForClientACK(conn, str(ctr) + '. ' + follower)
+		
+	waitForClientACK(conn, 'STOP')
+	 
 
 def sendAllUnread(username, conn):
 	unreadMessages = UserList[username].msg_unread
@@ -354,6 +370,9 @@ def handleClient(conn, addr):
 			
 		elif optionNum == EDIT: 
 			serverEdit(currUser, conn)
+			
+		elif optionNum == FOLLOWERS:
+			sendFollowers(currUser, conn)
 			
 		elif optionNum == POST:
 			serverPost(currUser, conn)

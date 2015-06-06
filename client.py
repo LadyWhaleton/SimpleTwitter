@@ -30,8 +30,31 @@ def displayMenu(username, numUnread):
 	print "1. See Offline Messages"
 	print "2. Search by Hashtag"
 	print "3. Edit Subscriptions"
-	print "4. Post a Message"
-	print "5. Logout"
+	print "4. View Followers"
+	print "5. Post a Message"
+	print "6. Logout"
+
+def displayFollowers(mySocket):
+	os.system('clear')
+	mySocket.send(FOLLOWERS)
+	
+	message = mySocket.recv(1024)
+	print message
+	
+	if message == 'You have no followers!':
+		return
+		
+	mySocket.send('OK')
+		
+	while True:
+		msg = mySocket.recv(1024)
+		mySocket.send('OK')
+		
+		if msg == 'STOP':
+			return
+		
+		print msg	
+	
 
 def receiveMessages(mySocket):
 	os.system('clear')
@@ -53,8 +76,7 @@ def receiveMessages(mySocket):
 		return
 	else:
 		print msg
-
-# broken		
+		
 def viewBySubscription(mySocket, numFollowing):
 	
 	# display subscriptions if you are actually subscribed to stuff	
@@ -351,6 +373,9 @@ while (not(logOut)):
 			
 	elif optionNum == EDIT: 
 			clientEdit(sock)
+			
+	elif optionNum == FOLLOWERS:
+			displayFollowers(sock)
 			
 	elif optionNum == POST:
 			clientPost(sock)

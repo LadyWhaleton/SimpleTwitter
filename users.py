@@ -20,6 +20,7 @@ class User:
 	def goOffline(self):
 		self.status = OFFLINE
 		self.port = -1
+		self.msg_unread = []
 		
 	def follow(self, otherUser):
 		if self.username == otherUser:
