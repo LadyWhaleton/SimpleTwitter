@@ -54,7 +54,6 @@ def displayFollowers(mySocket):
 			return
 		
 		print msg	
-	
 
 def receiveMessages(mySocket):
 	os.system('clear')

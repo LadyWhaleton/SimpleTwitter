@@ -36,6 +36,12 @@ class User:
 
 		self.subscriptions.append(otherUser)
 		UserList[otherUser].addFollower(self.username)
+		
+		# if other user is online, give them a notification
+		if UserList[otherUser].status == ONLINE:
+			userPort = UserList[otherUser].port
+			userPort.send('\n' + self.username + ' is now following you.')
+		
 		return 1, 'You are now following ' + otherUser+ '\n'
 		
 	def unfollow(self, otherUser):
