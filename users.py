@@ -85,7 +85,6 @@ userStatus = {NAME1:OFFLINE, NAME2:OFFLINE, NAME3:OFFLINE, NAME4:OFFLINE}
 
 # other dictionaries
 UserList = {NAME1:USER1, NAME2:USER2, NAME3:USER3, NAME4:USER4}
-userList = [NAME1, NAME2, NAME3, NAME4]
 
 # sample usages
 # print UserList["Wailord"].pw

@@ -11,14 +11,7 @@ from common import *
 from message import *
 from users import *
 
-# time.asctime(time.localtime(time.time()))
 # http://python.readthedocs.org/en/latest/howto/curses.html
-
-def setNewestUser(newUser):
-	newestUser = newUser
-
-def getNewestUser():
-	return newestUser
 
 # ================== Server setup related functions ==========================
 
@@ -58,11 +51,6 @@ def setupServer():
 		sys.exit()
 
 	print 'Server socket bind success'
-	
-	userList.append(USER1)
-	userList.append(USER2)
-	userList.append(USER3)
-	userList.append(USER4)
 	
 	return s
 			
@@ -106,13 +94,86 @@ def handleEchoPorts(unused):
 				
 # ============================== server functions ======================
 
+def sendAllUnread(username, conn):
+	unreadMessages = UserList[username].msg_unread
+	ctr = 0
+	for message in unreadMessages:
+		ctr += 1
+		waitForClientACK(conn, str(ctr) +'. ' +message.formatMessage() + '\n')
+			
+	waitForClientACK(conn, 'STOP')
+		
+	# check if ctr was zero (no messages from that subscription)
+	if ctr == 0:
+		conn.send('No Echoes could be heard.')
+	else:
+		conn.send('good')
+
+# broken
+def sendBySubscription(follower, numFollowing, conn):
+	# send subscriptions
+	sendSubscriptions(follower, numFollowing, conn)
+	
+	invalidInput = True
+	while invalidInput:
+		listIndex = conn.recv(1024)
+	
+		# verify that the user made a valid selection
+		if not(listIndex.isdigit()):
+			waitForClientACK(conn, '-1')
+			
+		# check if the user inputted the appropriate number
+		elif 0 < int(listIndex) and int(listIndex) <= numFollowing:
+			waitForClientACK(conn, '1')		
+			invalidInput = False
+			
+	
+	otherUser = UserList[follower].subscriptions[int(listIndex)-1]
+	
+	messagesUnread = UserList[follower].msg_unread
+	length = len(messagesUnread)
+		
+	ctr = 0
+	for i in range(length):			
+		message = messagesUnread[i] 
+			
+		if message.author == otherUser:
+			ctr += 1
+			waitForClientACK(conn, str(ctr) + '. ' + message.formatMessage() + '\n')
+			message.setRead()
+		
+	# wait for final acknowledgement indicating user received all messages
+	waitForClientACK(conn, 'STOP')
+	
+	# check if ctr was zero (no messages from that subscription)
+	if ctr == 0:
+		conn.send('No Echoes could be heard from ' + otherUser)
+	else:
+		conn.send('good')	
+		
+
 # serverside ViewOffline
 def serverView(username, conn):
-	print 'View Offline Messages'
-
-	unreadMessages = UserList[username].msg_unread
-	for message in unreadMessages:
-		print message.formatMessage()
+	
+	while True:
+		# send number following
+		numFollowing = len(UserList[username].subscriptions)
+		
+		waitForClientACK(conn, str(numFollowing))
+		
+		if numFollowing < 1:
+			waitForClientACK(conn, "You aren't following anyone!")
+			return
+			
+		# wait for user to select a correct option
+		option = conn.recv(1024)
+		
+		if option == '1':
+			sendAllUnread(username, conn)
+		elif option == '2':
+			sendBySubscription(username, numFollowing, conn)
+		elif option == '~':
+			return
 
 def serverFindTag(tag, tagList):
 	for t in tagList:
@@ -120,31 +181,37 @@ def serverFindTag(tag, tagList):
 			return True
 	return False
 
+def sendByTag(tag, conn):
+	length = len(messageList)
+		
+	ctr = 0
+	for i in range(length):
+		if ctr == 10:
+			break
+			
+		message = messageList[i]
+		tagFound = serverFindTag(tag, message.tagList)
+			
+		if tagFound:
+			waitForClientACK(conn, str(ctr+1) + '. ' + message.formatMessage())
+			ctr += 1
+		
+	# wait for final acknowledgement indicating user received all messages
+	waitForClientACK(conn, 'STOP')
+	
+	return ctr
+
 # serverside SearchByHashTag	
 def serverSearch(username, conn):
 	
 	while True:
 		tag = conn.recv(1024)
-		length = len(messageList)
 		
-		ctr = 0
-		for i in range(length):
-			if ctr == 10:
-				break
-			
-			message = messageList[i]
-			tagFound = serverFindTag(tag, message.tagList)
-			
-			if tagFound:
-				waitForClientACK(conn, str(ctr+1) + '. ' + message.formatMessage())
-				ctr += 1
-		
-		# wait for final acknowledgement indicating user received all messages
-		waitForClientACK(conn, 'STOP')
+		ctr = sendByTag(tag, conn)
 		
 		# check if ctr was zero (no messages with the tag)
 		if ctr == 0:
-			conn.send('none')
+			conn.send('No Echoes could be heard from ' + tag)
 		else:
 			conn.send('good')
 		
@@ -169,14 +236,16 @@ def subscribe(username, conn):
 	
 	return 
 
+def sendSubscriptions (username, numFollowing, conn):
+	# send subscriptions
+	for i in range(0, numFollowing):
+		currUser = UserList[username].subscriptions[i]
+		waitForClientACK(conn, str(i+1) + ". " + currUser)	
 			
 # determines whether or not the user exists	and does stuff
 # used for Deleting a subscription	
 def unsubscribe(username, conn, numFollowing):
-	# send subscriptions
-	for i in range(0, numFollowing):
-		currUser = UserList[username].subscriptions[i]
-		waitForClientACK(conn, str(i+1) + ". " + currUser)
+	sendSubscriptions(username, conn, numFollowing)
 	
 	# wait for user to select
 	userToRemove = conn.recv(1024)

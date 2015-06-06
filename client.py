@@ -33,10 +33,80 @@ def displayMenu(username, numUnread):
 	print "4. Post a Message"
 	print "5. Logout"
 
+def receiveMessages(mySocket):
+	os.system('clear')
+	msg = ""
+	while ( msg != 'STOP'):
+		msg = mySocket.recv(2048)
+			
+		# check if that were all of the messages
+		if msg != 'STOP':
+			print msg
+			mySocket.send('OK')
+		
+	# send final acknowledgement
+	mySocket.send('OK')
+	
+	# check if there weren't any messages to output
+	msg = mySocket.recv(1024)
+	if msg == 'good':
+		return
+	else:
+		print msg
+
+# broken		
+def viewBySubscription(mySocket, numFollowing):
+	
+	# display subscriptions if you are actually subscribed to stuff	
+	displaySubscriptions(mySocket, numFollowing)
+	
+	while True:
+		# select who to view messages from
+		user = raw_input('Who do you want to hear Echoes from? (Pick by number): ')
+		mySocket.send(user)
+	
+		check = mySocket.recv(1024)
+		mySocket.send('OK')
+		
+		if check == '-1':
+			print 'Error: Invalid selection!\n'
+		else:
+			break
+			
+	receiveMessages(mySocket)
+		
 	
 def clientView(mySocket):
 	mySocket.send(VIEW)
-	print "Viewing offline messages"
+	os.system('clear')
+	
+	while True:
+		numFollowing = int(mySocket.recv(1024))
+		mySocket.send('OK')
+	
+		if numFollowing < 1:
+			msg = mySocket.recv(1024)
+			print msg
+			mySocket.send('OK')
+			return
+		
+ 		print '1. View All'
+		print '2. View by Subscription'
+		print '~. Return to Menu'
+		option = raw_input('What would you like to do?: ')		
+		
+		if option == '1':
+			mySocket.send(option)
+			receiveMessages(mySocket)
+		elif option == '2':
+			mySocket.send(option)
+			viewBySubscription(mySocket, numFollowing)
+		elif option == '~':
+			mySocket.send(option)
+			return	
+		else: 
+			print 'Error: Not a valid option! Please try again.'	
+		
 
 def clientSearch(mySocket):
 	mySocket.send(SEARCH)
@@ -46,23 +116,7 @@ def clientSearch(mySocket):
 		tag = raw_input('What tag to search by?: ')
 		mySocket.send(tag)
 		
-		# display all of the messages
-		msg = ""
-		while ( msg != 'STOP'):
-			msg = mySocket.recv(2048)
-			
-			# check if that were all of the messages with the tag
-			if msg != 'STOP':
-				print msg
-				mySocket.send('OK')
-		
-		# send final acknowledgement
-		mySocket.send('OK')
-		 
-		# check if there weren't any messages to output
-		check = mySocket.recv(1024)
-		if check == 'none':
-			print 'No Echoes were detected with ' + tag + '.'
+		receiveMessages(mySocket)
 		
 		# ask the user if they want to search again
 		choice = raw_input('Search again? (y/n): ')
@@ -84,16 +138,19 @@ def trySubscribe(mySocket):
 	print msg
 	
 	mySocket.send('OK')
-		
+
+def displaySubscriptions(mySocket, numFollowing):
+	for i in range(0, numFollowing):
+		userFollowing = mySocket.recv(1024)
+		print userFollowing
+		mySocket.send('OK')	
 			
 def tryUnsubscribe(mySocket, numFollowing):
 	mySocket.send('2')	
+	
 	# Display subscriptions
-	for i in range(0, numFollowing):
-		subUser = mySocket.recv(1024)
-		print subUser
-		mySocket.send('OK')
-		
+	displaySubscriptions(mySocket, numFollowing)
+	
 	# select who to unsubscribe from
 	userToRemove = raw_input('Who do you want to unsubscribe from? (Pick by number): ')
 	mySocket.send(userToRemove)
@@ -281,8 +338,6 @@ logOut = False
 
 username, numUnread = login(sock)
 
-
-# http://stackoverflow.com/questions/16790725/sending-file-from-server-to-client-python
 while (not(logOut)):
 	displayMenu(username, numUnread)
 	optionNum = raw_input ("Which option to perform?: ")
