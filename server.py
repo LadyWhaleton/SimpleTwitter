@@ -1,3 +1,7 @@
+# Name: Stephanie Tong
+# Email: stong002@ucr.edu
+# CS164: Computer Networks Project
+
 import socket
 import struct
 import string
@@ -12,6 +16,19 @@ from message import *
 from users import *
 
 # http://python.readthedocs.org/en/latest/howto/curses.html
+# ================== administrator thread ==================================
+def adminCommands(servSock):
+	print 'Admin thread started'
+	while True:
+		command = raw_input()
+		
+		if command == 'messagecount':
+			print 'Number of Echoes: ' + str(len(messageList))
+		elif command == 'usercount':
+			print 'Number of online Whales: ' + str(len(onlineUsers))
+		else:
+			print 'Invalid command!'
+
 
 # ================== Server setup related functions ==========================
 
@@ -354,6 +371,7 @@ def handleClient(conn, addr):
 	# Validate the user and login if validated
 	currUser = validateUser(conn, addr)
 	event.wait()
+	onlineUsers.append(conn)
 	UserList[currUser].goOnline(recentlyConnected[0])	
 	UserLogout = False
 	
@@ -379,6 +397,7 @@ def handleClient(conn, addr):
 			
 		elif optionNum == LOGOUT: 
 			serverLogout(currUser, conn, addr)
+			onlineUsers.remove(conn)
 			UserLogout = True
 
 # ======================== M A I N ===============================
@@ -400,17 +419,21 @@ print '~~~~~~~~~~~~~~~~~~~~~'
 
 start_new_thread(handleEchoPorts, (" ", ))
 
+print '~~~~~~~~~~~~~~~~~~~~~'
+
+start_new_thread(adminCommands, (sock, ))
+
 # Maybe make a admin thread????
 	
 while 1:
 	# wait to accept a connection
 	conn, clientAddr = sock.accept()
-	onlineUsers.append(conn) # unused
+	# onlineUsers.append(conn) # unused
 	
 	# display client info
 	print 'Connected with ' + clientAddr[0] + ':' + str(clientAddr[1])
 
 	# start a new thread
-	start_new_thread(handleClient, (conn, clientAddr) )		
+	start_new_thread(handleClient, (conn, clientAddr, ))		
 
 sock.close()

@@ -1,3 +1,7 @@
+# Name: Stephanie Tong
+# Email: stong002@ucr.edu
+# CS164: Computer Networks Project
+
 ONLINE = True
 OFFLINE = False
 
